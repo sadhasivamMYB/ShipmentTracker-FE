@@ -16,7 +16,8 @@ import {
 import { login } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
-// Simple placeholder logic for login
+import { api } from '../utils/api';
+
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,29 +29,25 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const role = email.toLowerCase().includes('admin') ? 'admin' : 'user';
-      const name = role === 'admin' ? 'Admin User' : 'Standard User';
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { user, token } = response.data;
       
-      dispatch(login({
-        user: { id: '1', email, role, name },
-        token: 'fake-jwt-token'
-      }));
-      toast.success(`Successfully logged in as ${role}`);
-      navigate('/');
+      dispatch(login({ user, token }));
+      toast.success(`Successfully logged in as ${user.role}`);
+      
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to login');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleFillDemo = (role: 'admin' | 'user') => {
-    if (role === 'admin') {
-      setEmail('admin@company.com');
-    } else {
-      setEmail('user@company.com');
-    }
-    setPassword('password123');
-  };
 
   return (
     <Box className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -68,14 +65,6 @@ export default function Login() {
             </Typography>
           </Box>
 
-          <Box className="flex gap-2 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
-            <Button size="small" variant="outlined" onClick={() => handleFillDemo('admin')} fullWidth>
-              Admin Demo
-            </Button>
-            <Button size="small" variant="outlined" onClick={() => handleFillDemo('user')} fullWidth>
-              User Demo
-            </Button>
-          </Box>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <TextField 

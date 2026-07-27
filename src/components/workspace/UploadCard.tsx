@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import { Card, CardContent, Typography, Box, Button, IconButton } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, CheckCircle as CheckCircleIcon, Refresh as RefreshIcon, FileDownload as FileDownloadIcon, Visibility } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import StatusBadge from '../common/StatusBadge';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 
@@ -10,12 +9,12 @@ interface UploadCardProps {
   documentName: string;
   status: 'Waiting' | 'Uploading' | 'OCR Running' | 'Completed' | 'Failed';
   ocrStatus?: string;
-  currentVersion?: string;
+
   uploadTimestamp?: string;
   onUpload: (file: File) => void;
 }
 
-export default function UploadCard({ documentName, status, ocrStatus, currentVersion, uploadTimestamp, onUpload }: UploadCardProps) {
+export default function UploadCard({ documentName, status, ocrStatus, uploadTimestamp, onUpload }: UploadCardProps) {
   const user = useSelector((state: RootState) => state.auth.user);
   const canUpload = user?.role === 'admin';
 

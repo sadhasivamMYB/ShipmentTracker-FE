@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { setAuthToken } from '../../utils/api';
 
 export interface User {
   id: string;
@@ -27,11 +28,13 @@ export const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      setAuthToken(action.payload.token);
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      setAuthToken(null);
     },
   },
 });
