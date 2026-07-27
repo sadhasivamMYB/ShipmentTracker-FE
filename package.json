@@ -10,8 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "@mui/x-data-grid": "^9.10.0",
+    "@reduxjs/toolkit": "^2.12.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "axios": "^1.18.1",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.21",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-dropzone": "^19.1.1",
+    "react-hook-form": "^7.82.0",
+    "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.3.0",
+    "react-router-dom": "^7.18.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
