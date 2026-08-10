@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, Grid, Card, CardContent, Select, MenuItem, FormControl, InputLabel, CircularProgress } from '@mui/material';
 import StatusBadge from '../components/common/StatusBadge';
-import { api } from '../utils/api';
+import { useGetDashboardQuery } from '../services/appApi';
 
 const KpiCard = ({ title, value }: { title: string, value: string | number }) => (
   <Card className="h-full">
@@ -23,23 +23,8 @@ const allMonths = [
 
 export default function Dashboard() {
   const [year, setYear] = useState(2024);
-  const [metrics, setMetrics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/workspace/dashboard?year=${year}`);
-        setMetrics(res.data.data);
-      } catch (error) {
-        console.error("Failed to fetch dashboard metrics", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, [year]);
+  const { data: res, isLoading: loading, isError } = useGetDashboardQuery(year);
+  const metrics = res?.data;
 
   if (loading || !metrics) {
       return <Box className="flex justify-center p-8"><CircularProgress /></Box>;

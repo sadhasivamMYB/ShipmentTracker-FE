@@ -6,6 +6,8 @@ import Admin from './pages/Admin';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Workspace from './pages/Workspace';
 import Dashboard from './pages/Dashboard';
+import TemplateList from './pages/TemplateList';
+import TemplateDetails from './pages/TemplateDetails';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +36,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['admin']}>
             <Admin />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'template',
+        element: (
+          <ProtectedRoute>
+            <TemplateList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'template/:id',
+        element: (
+          <ProtectedRoute>
+            <TemplateDetails />
           </ProtectedRoute>
         ),
       },

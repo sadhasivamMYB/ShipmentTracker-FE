@@ -70,9 +70,9 @@ export default function FieldDefinitionsTab() {
     { field: 'fieldName', headerName: 'Field Name', flex: 1 },
     { field: 'dataType', headerName: 'Data Type', width: 130 },
     { field: 'documentType', headerName: 'Document Type', flex: 1 },
-    { 
-      field: 'isRequired', 
-      headerName: 'Required', 
+    {
+      field: 'isRequired',
+      headerName: 'Required',
       width: 100,
       type: 'boolean'
     },
@@ -90,71 +90,74 @@ export default function FieldDefinitionsTab() {
   ];
 
   return (
-    <Box className="flex flex-col gap-4">
-      <Box className="flex justify-between items-center">
-        <Typography variant="h6" fontWeight="bold">Manage Field Definitions</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleAdd}>
-          Add Field
-        </Button>
-      </Box>
+    <>
+      Dynamic OCR field definition
+    </>
+    // <Box className="flex flex-col gap-4">
+    //   <Box className="flex justify-between items-center">
+    //     <Typography variant="h6" fontWeight="bold">Manage Field Definitions</Typography>
+    //     <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleAdd}>
+    //       Add Field
+    //     </Button>
+    //   </Box>
 
-      <DataTable rows={rows} columns={columns} />
+    //   <DataTable rows={rows} columns={columns} />
 
-      <FormDialog
-        open={openForm}
-        title={editingId ? 'Edit Field' : 'Add Field'}
-        onClose={() => setOpenForm(false)}
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <Box className="flex flex-col gap-4 mt-2">
-          <Controller
-            name="fieldName"
-            control={control}
-            rules={{ required: 'Field name is required' }}
-            render={({ field }) => (
-              <TextField {...field} label="Field Name" fullWidth error={!!errors.fieldName} helperText={errors.fieldName?.message} />
-            )}
-          />
-          <Controller
-            name="dataType"
-            control={control}
-            rules={{ required: 'Data type is required' }}
-            render={({ field }) => (
-              <TextField {...field} select label="Data Type" fullWidth error={!!errors.dataType} helperText={errors.dataType?.message}>
-                <MenuItem value="Text">Text</MenuItem>
-                <MenuItem value="Number">Number</MenuItem>
-                <MenuItem value="Date">Date</MenuItem>
-              </TextField>
-            )}
-          />
-          <Controller
-            name="documentType"
-            control={control}
-            rules={{ required: 'Document type is required' }}
-            render={({ field }) => (
-              <TextField {...field} label="Document Type (e.g. Purchase Order)" fullWidth error={!!errors.documentType} helperText={errors.documentType?.message} />
-            )}
-          />
-          <Controller
-            name="isRequired"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                label="Required Field"
-              />
-            )}
-          />
-        </Box>
-      </FormDialog>
+    //   <FormDialog
+    //     open={openForm}
+    //     title={editingId ? 'Edit Field' : 'Add Field'}
+    //     onClose={() => setOpenForm(false)}
+    //     onSubmit={handleSubmit(onSubmit)}
+    //   >
+    //     <Box className="flex flex-col gap-4 mt-2">
+    //       <Controller
+    //         name="fieldName"
+    //         control={control}
+    //         rules={{ required: 'Field name is required' }}
+    //         render={({ field }) => (
+    //           <TextField {...field} label="Field Name" fullWidth error={!!errors.fieldName} helperText={errors.fieldName?.message} />
+    //         )}
+    //       />
+    //       <Controller
+    //         name="dataType"
+    //         control={control}
+    //         rules={{ required: 'Data type is required' }}
+    //         render={({ field }) => (
+    //           <TextField {...field} select label="Data Type" fullWidth error={!!errors.dataType} helperText={errors.dataType?.message}>
+    //             <MenuItem value="Text">Text</MenuItem>
+    //             <MenuItem value="Number">Number</MenuItem>
+    //             <MenuItem value="Date">Date</MenuItem>
+    //           </TextField>
+    //         )}
+    //       />
+    //       <Controller
+    //         name="documentType"
+    //         control={control}
+    //         rules={{ required: 'Document type is required' }}
+    //         render={({ field }) => (
+    //           <TextField {...field} label="Document Type (e.g. Purchase Order)" fullWidth error={!!errors.documentType} helperText={errors.documentType?.message} />
+    //         )}
+    //       />
+    //       <Controller
+    //         name="isRequired"
+    //         control={control}
+    //         render={({ field }) => (
+    //           <FormControlLabel
+    //             control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+    //             label="Required Field"
+    //           />
+    //         )}
+    //       />
+    //     </Box>
+    //   </FormDialog>
 
-      <ConfirmDialog
-        open={openConfirm}
-        title="Delete Field"
-        message="Are you sure you want to delete this field? Data extraction for this field will stop."
-        onClose={() => setOpenConfirm(false)}
-        onConfirm={onConfirmDelete}
-      />
-    </Box>
+    //   <ConfirmDialog
+    //     open={openConfirm}
+    //     title="Delete Field"
+    //     message="Are you sure you want to delete this field? Data extraction for this field will stop."
+    //     onClose={() => setOpenConfirm(false)}
+    //     onConfirm={onConfirmDelete}
+    //   />
+    // </Box>
   );
 }

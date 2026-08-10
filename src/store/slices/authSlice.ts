@@ -1,10 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { setAuthToken } from '../../utils/api';
 
 export interface User {
   id: string;
   email: string;
-  name?: string;
+  fullName?: string;
   role: 'admin' | 'user';
 }
 
@@ -14,11 +13,31 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-const initialState: AuthState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
+const getInitialState = (): AuthState => {
+  const savedToken = localStorage.getItem('token');
+  const savedUser = localStorage.getItem('user');
+
+  if (savedToken && savedUser) {
+    try {
+      return {
+        token: savedToken,
+        user: JSON.parse(savedUser),
+        isAuthenticated: true,
+      };
+    } catch (e) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+  }
+
+  return {
+    user: null,
+    token: null,
+    isAuthenticated: false,
+  };
 };
+
+const initialState: AuthState = getInitialState();
 
 export const authSlice = createSlice({
   name: 'auth',
@@ -28,13 +47,15 @@ export const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-      setAuthToken(action.payload.token);
+      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      setAuthToken(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
   },
 });

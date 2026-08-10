@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, Typography, Breadcrumbs, Link, Select, MenuItem, FormControl, InputLabel, Button, TextField, InputAdornment, CircularProgress } from '@mui/material';
 import { type GridColDef } from '@mui/x-data-grid';
 import {
@@ -12,63 +12,50 @@ import UploadCard from '../components/workspace/UploadCard';
 import StatusBadge from '../components/common/StatusBadge';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
-import { api } from '../utils/api';
+import {
+  useGetWorkspaceQuery,
+  useGetSummaryQuery,
+  useCreateWorkspaceMutation,
+  useUploadDocumentMutation,
+  useLazyExportSummaryQuery,
+  useGetDocumentTypesQuery
+} from '../services/appApi';
 import toast from 'react-hot-toast';
 
-const documentTypes = [
-  { id: 1, name: 'Order' },
-  { id: 2, name: 'Insurance' },
-  { id: 3, name: 'Bill of Lading' },
-  { id: 4, name: 'Export PFI' },
-  { id: 5, name: 'Form M' },
-  { id: 6, name: 'PAAR' },
-  { id: 7, name: 'Export Assessment' }
-];
-
 export default function Workspace() {
+  const { data: documentTypesResponse } = useGetDocumentTypesQuery();
+  const documentTypes = documentTypesResponse?.data?.filter((dt: any) => dt.status === 'active') || [];
   const [year, setYear] = useState(2024);
   const [month, setMonth] = useState('January');
   const [search, setSearch] = useState('');
 
-  const [workspace, setWorkspace] = useState<any>(null);
-  const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
   const user = useSelector((state: RootState) => state.auth.user);
   const canUpload = user?.role?.toLowerCase() === 'admin';
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // 1. Fetch Workspace
-      const wsRes = await api.get(`/workspace?year=${year}&month=${month}`);
-      const wsData = wsRes.data.data;
-      setWorkspace(wsData);
+  // 1. Fetch Workspace
+  const { currentData: wsRes, isLoading: isWsLoading, isFetching: isWsFetching, refetch: refetchWorkspace } = useGetWorkspaceQuery({ year, month });
+  const workspace = wsRes?.data;
 
-      console.log(wsData, "✅✅✅")
+  // 2. Fetch Summary
+  const { currentData: sumRes, isLoading: isSumLoading, isFetching: isSumFetching, refetch: refetchSummary } = useGetSummaryQuery(workspace?.id as number, {
+    skip: !workspace?.id,
+  });
+  const rows = sumRes?.data || [];
 
-      if (wsData) {
-        // 2. Fetch Summary
-        const sumRes = await api.get(`/summary?workspaceId=${wsData.id}`);
-        console.log(sumRes)
-        setRows(sumRes.data.data);
-      } else {
-        setRows([]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch workspace data", error);
-      setWorkspace(null);
-      setRows([]);
-    } finally {
-      setLoading(false);
+  const loading = isWsLoading || isWsFetching || isSumLoading || isSumFetching;
+
+  const [uploadDocument] = useUploadDocumentMutation();
+  const [createWorkspace] = useCreateWorkspaceMutation();
+  const [exportSummary] = useLazyExportSummaryQuery();
+
+  const handleRefresh = () => {
+    refetchWorkspace();
+    if (workspace?.id) {
+      refetchSummary();
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [year, month]);
-
-  const handleUpload = async (file: File, documentTypeId: number) => {
+  const handleUpload = async (file: File, documentTypeCode: string) => {
     if (!workspace) {
       toast.error("Workspace not found for this month.");
       return;
@@ -77,15 +64,12 @@ export default function Workspace() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('workspaceId', workspace.id.toString());
-    formData.append('documentTypeId', documentTypeId.toString());
+    formData.append('documentTypeCode', documentTypeCode);
 
     try {
       const toastId = toast.loading(`Uploading ${file.name}...`);
-      await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await uploadDocument(formData).unwrap();
       toast.success("Upload successful and OCR processing started", { id: toastId });
-      fetchData(); // Refresh summary table
     } catch (error) {
       console.error("Upload error", error);
       toast.error("Upload failed");
@@ -95,10 +79,8 @@ export default function Workspace() {
   const handleExport = async () => {
     if (!workspace) return;
     try {
-      const response = await api.get(`/summary/export?workspaceId=${workspace.id}`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await exportSummary(workspace.id).unwrap();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `Summary_${month}_${year}.xlsx`);
@@ -114,11 +96,11 @@ export default function Workspace() {
   const dynamicColumns: GridColDef[] = useMemo(() => {
     if (rows.length === 0) return [];
     const allKeys = new Set<string>();
-    rows.forEach(row => Object.keys(row).forEach(k => k !== 'id' && allKeys.add(k)));
+    rows.forEach((row: any) => Object.keys(row).forEach(k => k !== 'id' && allKeys.add(k)));
 
     const cols = Array.from(allKeys).map(key => {
       let renderCell = undefined;
-      
+
       if (key === 'status') {
         renderCell = (params: any) => <StatusBadge status={params.value} />;
       } else {
@@ -148,7 +130,7 @@ export default function Workspace() {
     return cols;
   }, [rows]);
 
-  const filteredRows = rows.filter(row =>
+  const filteredRows = rows.filter((row: any) =>
     Object.values(row).some(val =>
       String(val).toLowerCase().includes(search.toLowerCase())
     )
@@ -165,7 +147,7 @@ export default function Workspace() {
         </Breadcrumbs>
 
         <Box className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <Typography variant="h5" fontWeight="bold" color="text.primary">
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }} color="text.primary">
             Workspace: {month} {year}
           </Typography>
           <Box className="flex gap-4">
@@ -192,7 +174,7 @@ export default function Workspace() {
 
       <Box className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-4">
         <Box className="flex justify-between items-center">
-          <Typography variant="h6" fontWeight="bold">Summary Data</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Summary Data</Typography>
           <Box className="flex gap-2">
             <TextField
               size="small"
@@ -207,7 +189,7 @@ export default function Workspace() {
                 ),
               }}
             />
-            <Button variant="outlined" startIcon={<RefreshIcon />} size="small" onClick={fetchData}>
+            <Button variant="outlined" startIcon={<RefreshIcon />} size="small" onClick={handleRefresh}>
               Refresh
             </Button>
             <Button variant="contained" startIcon={<DownloadIcon />} size="small" onClick={handleExport} disabled={!workspace || rows.length === 0}>
@@ -218,16 +200,16 @@ export default function Workspace() {
 
         {loading ? (
           <Box className="flex justify-center p-8"><CircularProgress /></Box>
-        ) : !workspace ? (
+        ) : !workspace?.id ? (
           <Box className="flex flex-col items-center justify-center p-8 gap-4 text-gray-500">
             <Typography>Workspace not created for this month yet.</Typography>
             {canUpload && (
               <Button variant="contained" onClick={async () => {
                 try {
                   const toastId = toast.loading("Creating workspace...");
-                  await api.post('/workspace', { year, month });
+                  await createWorkspace({ year, month }).unwrap();
                   toast.success("Workspace created!", { id: toastId });
-                  fetchData();
+                  refetchWorkspace();
                 } catch (e) {
                   toast.error("Failed to create workspace");
                 }
@@ -241,18 +223,22 @@ export default function Workspace() {
 
       {canUpload && (
         <Box>
-          <Typography variant="h6" fontWeight="bold" className="mb-4">
-            Required Documents (Admin Upload)
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }} className="my-4">
+            Required Documents *
           </Typography>
           <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {documentTypes.map((doc) => (
-              <UploadCard
-                key={doc.id}
-                documentName={doc.name}
-                status={'Waiting'}
-                onUpload={(file) => handleUpload(file, doc.id)}
-              />
-            ))}
+            {documentTypes.map((doc: any) => {
+              const upload = workspace?.documentUploads?.find((u: any) => u.documentTypeId === doc.id);
+              return (
+                <UploadCard
+                  key={doc.id}
+                  documentName={doc.name}
+                  status={upload ? 'Uploaded' : 'Waiting'}
+                  fileUrl={upload ? upload.filePath : undefined}
+                  onUpload={(file) => handleUpload(file, doc.documentCode)}
+                />
+              );
+            })}
           </Box>
         </Box>
       )}

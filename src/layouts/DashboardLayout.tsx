@@ -9,18 +9,15 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  AppBar,
   Toolbar,
   Typography,
-  IconButton,
   Avatar
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   Folder as FolderIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
-  Menu as MenuIcon
+  DocumentScannerOutlined
 } from '@mui/icons-material';
 import { logout } from '../store/slices/authSlice';
 import type { RootState } from '../store/store';
@@ -32,6 +29,7 @@ const menuItems = [
   // { text: 'Workspaces', icon: <FolderIcon />, path: '/workspace' },
   { text: 'Workspaces', icon: <FolderIcon />, path: '/' },
   { text: 'Admin', icon: <SettingsIcon />, path: '/admin' },
+  { text: 'Templates', icon: <DocumentScannerOutlined />, path: '/template' },
 ];
 
 export default function DashboardLayout() {
@@ -39,6 +37,8 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
+
+  console.log(user, '☠️☠️☠️✅')
 
   const handleLogout = () => {
     dispatch(logout());
@@ -75,38 +75,38 @@ export default function DashboardLayout() {
           <List className="flex flex-col gap-1">
             {menuItems
               .filter((item) => {
-                if (item.text === 'Admin' && user?.role !== 'admin') return false;
+                if ((item.text === 'Admin' || item.text === 'Templates') && user?.role !== 'admin') return false;
                 return true;
               })
               .map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  selected={location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))}
-                  onClick={() => navigate(item.path)}
-                  sx={{
-                    borderRadius: '8px',
-                    mb: '4px',
-                    '&.Mui-selected': {
-                      bgcolor: 'primary.50',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': {
+                <ListItem key={item.text} disablePadding>
+                  <ListItemButton
+                    selected={location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))}
+                    onClick={() => navigate(item.path)}
+                    sx={{
+                      borderRadius: '8px',
+                      mb: '4px',
+                      '&.Mui-selected': {
+                        bgcolor: 'primary.50',
                         color: 'primary.main',
+                        '& .MuiListItemIcon-root': {
+                          color: 'primary.main',
+                        }
+                      },
+                      '&:hover': {
+                        bgcolor: 'gray.50',
                       }
-                    },
-                    '&:hover': {
-                      bgcolor: 'gray.50',
-                    }
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: '40px', color: 'text.secondary' }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={<Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{item.text}</Typography>}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: '40px', color: 'text.secondary' }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={<Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{item.text}</Typography>}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
           </List>
         </Box>
 
@@ -117,10 +117,10 @@ export default function DashboardLayout() {
             </Avatar>
             <Box className="flex flex-col overflow-hidden">
               <Typography variant="body2" className="text-gray-900 font-semibold truncate">
-                {user?.name || 'Admin User'}
+                {user?.fullName || 'User'}
               </Typography>
               <Typography variant="caption" className="text-gray-500 truncate">
-                {user?.email || 'admin@company.com'}
+                {user?.email}
               </Typography>
             </Box>
           </Box>

@@ -16,22 +16,21 @@ import {
 import { login } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
-import { api } from '../utils/api';
+import { useLoginMutation } from '../services/appApi';
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('user@company.com');
   const [password, setPassword] = useState('password123');
+  const [loginApi, { isLoading: loading }] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { user, token } = response.data;
+      const response = await loginApi({ email, password }).unwrap();
+      const { user, token } = response;
       
       dispatch(login({ user, token }));
       toast.success(`Successfully logged in as ${user.role}`);
@@ -42,9 +41,7 @@ export default function Login() {
         navigate('/');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to login');
-    } finally {
-      setLoading(false);
+      toast.error(error.data?.message || 'Failed to login');
     }
   };
 
