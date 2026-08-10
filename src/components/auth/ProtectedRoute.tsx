@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
   const location = useLocation();
 
   if (!isAuthenticated || !user) {
