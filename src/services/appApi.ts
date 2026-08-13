@@ -13,7 +13,9 @@ export const appApi = createApi({
       return headers;
     },
   }),
+
   tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType'],
+
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -22,14 +24,17 @@ export const appApi = createApi({
         body: credentials,
       }),
     }),
+
     getDashboard: builder.query<any, number>({
       query: (year) => `/workspace/dashboard?year=${year}`,
       providesTags: ['Dashboard'],
     }),
+
     getWorkspace: builder.query<any, { year: number; month: string }>({
       query: ({ year, month }) => `/workspace?year=${year}&month=${month}`,
       providesTags: (result) => result?.data ? [{ type: 'Workspace', id: result.data.id }] : ['Workspace'],
     }),
+
     createWorkspace: builder.mutation<any, { year: number; month: string }>({
       query: (data) => ({
         url: '/workspace',
@@ -38,16 +43,27 @@ export const appApi = createApi({
       }),
       invalidatesTags: ['Workspace', 'Dashboard'],
     }),
-    getSummary: builder.query<any, number>({
-      query: (workspaceId) => `/summary?workspaceId=${workspaceId}`,
-      providesTags: (result, _error, id) => [{ type: 'Summary', id }],
+
+    getSummary: builder.query<any, { workspaceId?: number; search?: string }>({
+      query: ({ workspaceId, search }) => {
+        const params = new URLSearchParams();
+        if (search) {
+          params.append('search', search);
+        } else if (workspaceId) {
+          params.append('workspaceId', workspaceId.toString());
+        }
+        return `/summary?${params.toString()}`;
+      },
+      providesTags: (result, _error, arg) => [{ type: 'Summary', id: arg.search ? 'search' : arg.workspaceId }],
     }),
+
     exportSummary: builder.query<Blob, number>({
       query: (workspaceId) => ({
         url: `/summary/export?workspaceId=${workspaceId}`,
         responseHandler: async (response) => response.blob(),
       }),
     }),
+
     uploadDocument: builder.mutation<any, FormData>({
       query: (formData) => ({
         url: '/upload',
@@ -59,10 +75,12 @@ export const appApi = createApi({
         return [{ type: 'Summary', id: Number(workspaceId) }, 'Dashboard'];
       }
     }),
+
     getDocumentTypes: builder.query<any, void>({
       query: () => '/document-types',
       providesTags: ['DocumentType'],
     }),
+
     createDocumentType: builder.mutation<any, { name: string; documentCode: string; description?: string; status?: string }>({
       query: (data) => ({
         url: '/document-types',
@@ -71,6 +89,7 @@ export const appApi = createApi({
       }),
       invalidatesTags: ['DocumentType'],
     }),
+
     updateDocumentType: builder.mutation<any, { id: number; data: { name: string; documentCode: string; description?: string; status?: string } }>({
       query: ({ id, data }) => ({
         url: `/document-types/${id}`,
@@ -79,12 +98,20 @@ export const appApi = createApi({
       }),
       invalidatesTags: ['DocumentType'],
     }),
+
     deleteDocumentType: builder.mutation<any, number>({
       query: (id) => ({
         url: `/document-types/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['DocumentType'],
+    }),
+
+    // fetch product Values QTY, NAME, PRICE
+
+    getProductValues: builder.query<any, string>({
+      query: (rowId) => `/summary/row/${rowId}`,
+      providesTags: (result, _error, id) => [{ type: 'Summary', id }],
     }),
   }),
 });
@@ -101,4 +128,6 @@ export const {
   useCreateDocumentTypeMutation,
   useUpdateDocumentTypeMutation,
   useDeleteDocumentTypeMutation,
+
+  useGetProductValuesQuery
 } = appApi;
