@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
-import { Card, CardContent, Typography, Box, Button, IconButton, Paper, alpha, useTheme } from '@mui/material';
+import { Card, CardContent, Typography, Box, Paper, alpha, useTheme } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, CheckCircle as CheckCircleIcon, Refresh as RefreshIcon, FileDownload as FileDownloadIcon, Visibility, Description as DescriptionIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
-import StatusBadge from '../common/StatusBadge';
 
 interface UploadCardProps {
   documentName: string;
@@ -83,7 +82,7 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
 
         {/* Action Section */}
         <Box sx={{ mt: 'auto' }}>
-          {canUpload ? (
+          {canUpload && (
             <Paper
               {...getRootProps()}
               elevation={0}
@@ -110,25 +109,6 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
                 </Typography>
               </Box>
             </Paper>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              startIcon={<FileDownloadIcon />}
-              sx={{
-                borderRadius: 2,
-                py: 1.2,
-                boxShadow: 'none',
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': {
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                }
-              }}
-            >
-              Download Document
-            </Button>
           )}
         </Box>
       </CardContent>

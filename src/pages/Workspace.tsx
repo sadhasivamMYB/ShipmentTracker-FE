@@ -31,7 +31,7 @@ export default function Workspace() {
   const [month, setMonth] = useState('January');
   const [search, setSearch] = useState('');
   const [openDialogTable, setOpenDialogTable] = useState(false);
-  const [openDialogDataID, setOpenDialogDataID] = useState({})
+  const [openDialogDataID, setOpenDialogDataID] = useState<string | null>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
   const canUpload = user?.role?.toLowerCase() === 'admin';
@@ -78,13 +78,13 @@ export default function Workspace() {
     formData.append('workspaceId', workspace.id.toString());
     formData.append('documentTypeCode', documentTypeCode);
 
+    const toastId = toast.loading(`Uploading ${file.name}...`);
     try {
-      const toastId = toast.loading(`Uploading ${file.name}...`);
       await uploadDocument(formData).unwrap();
       toast.success("Upload successful and OCR processing started", { id: toastId });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error", error);
-      toast.error("Upload failed");
+      toast.error(error?.data?.message || "Upload failed", { id: toastId });
     }
   };
 
