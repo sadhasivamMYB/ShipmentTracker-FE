@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, FormControlLabel, Switch, Typography, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, FormControlLabel, Switch, Typography, CircularProgress, Select, MenuItem } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
@@ -74,6 +74,19 @@ export default function DocumentTypesTab() {
   // };
 
   const onSubmit = async (data: FormData) => {
+    // Check if the document code already exists
+    const isDuplicate = rows.some((row: any) => {
+      if (editingId) {
+        return row.documentCode === data.documentCode && row.id !== editingId;
+      }
+      return row.documentCode === data.documentCode;
+    });
+
+    if (isDuplicate) {
+      toast.error('Type Already created');
+      return;
+    }
+
     try {
       const payload = {
         name: data.name,
@@ -163,7 +176,16 @@ export default function DocumentTypesTab() {
             control={control}
             rules={{ required: 'Code is required' }}
             render={({ field }) => (
-              <TextField {...field} label="Document Code (e.g. ORDER)" fullWidth error={!!errors.documentCode} helperText={errors.documentCode?.message} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
+              <Select {...field} label="Document Code (e.g. ORDER)" fullWidth error={!!errors.documentCode} >
+                <MenuItem value="PFI">PFI</MenuItem>
+                <MenuItem value="IINS">Import Insurance</MenuItem>
+                <MenuItem value="BL">BL</MenuItem>
+                <MenuItem value="EINS">Export Insurance</MenuItem>
+                <MenuItem value="EXORT_PFI">Export PFI</MenuItem>
+                <MenuItem value="PAAR">Paar</MenuItem>
+                <MenuItem value="FORM_M">Form M</MenuItem>
+                <MenuItem value="FI">Final Invoice</MenuItem>
+              </Select>
             )}
           />
           <Controller

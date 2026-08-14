@@ -22,6 +22,7 @@ export default function DataTable({ rows, columns, loading }: DataTableProps) {
       <DataGrid
         rows={rows}
         columns={columns}
+        hideFooter
         sx={{
           border: 0,
           '& .MuiDataGrid-columnHeaders': {

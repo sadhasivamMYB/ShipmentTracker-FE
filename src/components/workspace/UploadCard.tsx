@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
-import { Card, CardContent, Typography, Box, Button, IconButton, Paper, alpha, useTheme } from '@mui/material';
+import { Card, CardContent, Typography, Box, Paper, alpha, useTheme } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, CheckCircle as CheckCircleIcon, Refresh as RefreshIcon, FileDownload as FileDownloadIcon, Visibility, Description as DescriptionIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
-import StatusBadge from '../common/StatusBadge';
 
 interface UploadCardProps {
   documentName: string;
@@ -32,14 +31,8 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
     disabled: !canUpload
   });
 
-  const handleView = () => {
-    if (fileUrl) {
-      window.open(`http://localhost:5000/${fileUrl}`, '_blank');
-    }
-  };
-
   return (
-    <Card 
+    <Card
       elevation={0}
       sx={{
         borderRadius: 3,
@@ -58,10 +51,10 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
         {/* Header Section */}
         <Box className="flex justify-between items-start mb-4">
           <Box className="flex gap-3 items-center">
-            <Box 
-              sx={{ 
-                p: 1.2, 
-                borderRadius: 2, 
+            <Box
+              sx={{
+                p: 1.2,
+                borderRadius: 2,
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
                 color: 'primary.main',
                 display: 'flex',
@@ -82,21 +75,14 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
               )}
             </Box>
           </Box>
-          <IconButton size="small" sx={{ bgcolor: 'grey.50', '&:hover': { bgcolor: 'grey.200' }, visibility: fileUrl ? 'visible' : 'hidden' }} onClick={handleView}>
+          {/* <IconButton size="small" sx={{ bgcolor: 'grey.50', '&:hover': { bgcolor: 'grey.200' }, visibility: fileUrl ? 'visible' : 'hidden' }}>
             <Visibility fontSize="small" />
-          </IconButton>
-        </Box>
-
-        <Box className="flex gap-2 items-center mb-5">
-          <StatusBadge status={status} />
-          {ocrStatus && (
-            <StatusBadge status={ocrStatus as any} />
-          )}
+          </IconButton> */}
         </Box>
 
         {/* Action Section */}
         <Box sx={{ mt: 'auto' }}>
-          {canUpload ? (
+          {canUpload && (
             <Paper
               {...getRootProps()}
               elevation={0}
@@ -118,35 +104,11 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
               <input {...getInputProps()} />
               <Box className="flex flex-col items-center justify-center gap-1">
                 <UploadFileIcon sx={{ fontSize: 32, color: isDragActive ? 'primary.main' : 'text.secondary', mb: 1 }} />
-                <Typography variant="body2" fontWeight={600} color="text.primary">
-                  {status === 'Completed' || status === 'Uploaded' ? 'Drop file to replace' : 'Click or drop file here'}
-                </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  PDF or image files (max 10MB)
+                  Upload selected type PDF
                 </Typography>
               </Box>
             </Paper>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              startIcon={<FileDownloadIcon />}
-              sx={{ 
-                borderRadius: 2, 
-                py: 1.2,
-                boxShadow: 'none',
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': {
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                }
-              }}
-              disabled={status !== 'Completed' && status !== 'Uploaded'}
-              onClick={handleView}
-            >
-              Download Document
-            </Button>
           )}
         </Box>
       </CardContent>
