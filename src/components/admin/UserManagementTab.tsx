@@ -8,6 +8,12 @@ import FormDialog from './FormDialog';
 import ConfirmDialog from '../common/ConfirmDialog';
 import StatusBadge from '../common/StatusBadge';
 import toast from 'react-hot-toast';
+import { 
+  useGetUsersQuery, 
+  useCreateUserMutation, 
+  useUpdateUserMutation, 
+  useDeleteUserMutation 
+} from '../../services/appApi';
 
 type FormData = {
   name: string;
@@ -16,14 +22,12 @@ type FormData = {
   isActive: boolean;
 };
 
-const initialData = [
-  { id: 1, name: 'Admin User', email: 'admin@company.com', role: 'admin', isActive: true },
-  { id: 2, name: 'Standard User', email: 'user@company.com', role: 'user', isActive: true },
-  { id: 3, name: 'Jane Doe', email: 'jane@company.com', role: 'user', isActive: false },
-];
-
 export default function UserManagementTab() {
-  const [rows, setRows] = useState(initialData);
+  const { data: users = [], isLoading } = useGetUsersQuery();
+  const [createUser] = useCreateUserMutation();
+  const [updateUser] = useUpdateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
+
   const [openForm, setOpenForm] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -50,21 +54,31 @@ export default function UserManagementTab() {
     setOpenConfirm(true);
   };
 
-  const onConfirmDelete = () => {
-    setRows(rows.filter(r => r.id !== deletingId));
-    toast.success('User deleted');
+  const onConfirmDelete = async () => {
+    if (deletingId) {
+      try {
+        await deleteUser(deletingId).unwrap();
+        toast.success('User deleted');
+      } catch (err) {
+        toast.error('Failed to delete user');
+      }
+    }
     setOpenConfirm(false);
   };
 
-  const onSubmit = (data: FormData) => {
-    if (editingId) {
-      setRows(rows.map(r => r.id === editingId ? { ...r, ...data } : r));
-      toast.success('User updated');
-    } else {
-      setRows([...rows, { ...data, id: Date.now() }]);
-      toast.success('User created and invitation sent');
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (editingId) {
+        await updateUser({ id: editingId, data }).unwrap();
+        toast.success('User updated');
+      } else {
+        await createUser(data).unwrap();
+        toast.success('User created and invitation sent');
+      }
+      setOpenForm(false);
+    } catch (err) {
+      toast.error(editingId ? 'Failed to update user' : 'Failed to create user');
     }
-    setOpenForm(false);
   };
 
   const handleResetPassword = () => {
@@ -88,7 +102,7 @@ export default function UserManagementTab() {
       field: 'isActive', 
       headerName: 'Status', 
       width: 120,
-      renderCell: (params) => <StatusBadge status={params.value ? 'Completed' : 'Failed'} />
+      renderCell: (params) => <StatusBadge status={params.value ? 'Active' : 'Inactive'} />
     },
     {
       field: 'actions',
@@ -113,7 +127,7 @@ export default function UserManagementTab() {
         </Button>
       </Box>
 
-      <DataTable rows={rows} columns={columns} />
+      <DataTable rows={users} columns={columns} loading={isLoading} />
 
       <FormDialog
         open={openForm}

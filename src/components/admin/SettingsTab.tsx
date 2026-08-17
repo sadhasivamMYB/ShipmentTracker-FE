@@ -15,7 +15,7 @@ type FormData = {
 export default function SettingsTab() {
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     defaultValues: {
-      companyName: 'DocTracker Enterprise',
+      companyName: 'Shipment Tracker',
       supportEmail: 'support@doctracker.com',
       ocrConfidenceThreshold: 85,
       enableEmailNotifications: true,
@@ -36,10 +36,10 @@ export default function SettingsTab() {
     <Box className="flex flex-col gap-6 max-w-4xl">
       <Box className="flex justify-between items-center mb-2">
         <Typography variant="h6" fontWeight="bold">Global Settings</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<SaveIcon />} 
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<SaveIcon />}
           onClick={handleSubmit(onSubmit)}
           disabled={isSubmitting}
         >
@@ -65,7 +65,7 @@ export default function SettingsTab() {
             <Controller
               name="supportEmail"
               control={control}
-              rules={{ 
+              rules={{
                 required: 'Support email is required',
                 pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
               }}
@@ -87,19 +87,19 @@ export default function SettingsTab() {
             <Controller
               name="ocrConfidenceThreshold"
               control={control}
-              rules={{ 
+              rules={{
                 required: 'Threshold is required',
                 min: { value: 0, message: 'Minimum is 0' },
                 max: { value: 100, message: 'Maximum is 100' }
               }}
               render={({ field }) => (
-                <TextField 
-                  {...field} 
-                  label="OCR Confidence Threshold (%)" 
-                  type="number" 
-                  fullWidth 
-                  error={!!errors.ocrConfidenceThreshold} 
-                  helperText={errors.ocrConfidenceThreshold?.message || "Minimum confidence to skip manual review"} 
+                <TextField
+                  {...field}
+                  label="OCR Confidence Threshold (%)"
+                  type="number"
+                  fullWidth
+                  error={!!errors.ocrConfidenceThreshold}
+                  helperText={errors.ocrConfidenceThreshold?.message || "Minimum confidence to skip manual review"}
                   onChange={(e) => field.onChange(Number(e.target.value))}
                 />
               )}

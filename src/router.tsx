@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Workspace from './pages/Workspace';
-import Dashboard from './pages/Dashboard';
+// import Dashboard from './pages/Dashboard';
 import TemplateList from './pages/TemplateList';
 import TemplateDetails from './pages/TemplateDetails';
 
@@ -27,9 +27,12 @@ export const router = createBrowserRouter([
       //   element: <Dashboard />,
       // },
       {
-        // path: 'workspace',
         index: true,
-        element: <Workspace />,
+        element: (
+          <ProtectedRoute allowedRoles={['admin', 'user']}>
+            <Workspace />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'admin/*',

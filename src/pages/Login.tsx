@@ -35,11 +35,7 @@ export default function Login() {
       dispatch(login({ user, token }));
       toast.success(`Successfully logged in as ${user.role}`);
       
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to login');
     }
