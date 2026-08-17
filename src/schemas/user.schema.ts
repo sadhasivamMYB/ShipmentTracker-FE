@@ -17,6 +17,7 @@ export const UserFormSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   role: z.enum(["admin", "user"], { message: "Role is required" }),
   isActive: z.boolean(),
+  sendInvitation: z.boolean().optional(),
 });
 
 export type UserFormData = z.infer<typeof UserFormSchema>;

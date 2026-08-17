@@ -31,11 +31,11 @@ export default function UserManagementTab() {
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
     resolver: zodResolver(UserFormSchema),
-    defaultValues: { name: '', email: '', role: 'user', isActive: true }
+    defaultValues: { name: '', email: '', role: 'user', isActive: true, sendInvitation: true }
   });
 
   const handleAdd = () => {
-    reset({ name: '', email: '', role: 'user', isActive: true });
+    reset({ name: '', email: '', role: 'user', isActive: true, sendInvitation: true });
     setEditingId(null);
     setOpenForm(true);
   };
@@ -70,7 +70,11 @@ export default function UserManagementTab() {
         toast.success('User updated');
       } else {
         await createUser(data).unwrap();
-        toast.success('User created and invitation sent');
+        if (data.sendInvitation) {
+          toast.success('User created and invitation sent');
+        } else {
+          toast.success('User created successfully');
+        }
       }
       setOpenForm(false);
     } catch (err) {
@@ -167,6 +171,18 @@ export default function UserManagementTab() {
               />
             )}
           />
+          {!editingId && (
+            <Controller
+              name="sendInvitation"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={<Switch checked={field.value ?? true} onChange={(e) => field.onChange(e.target.checked)} />}
+                  label="Send Invitation Email"
+                />
+              )}
+            />
+          )}
         </Box>
       </FormDialog>
 

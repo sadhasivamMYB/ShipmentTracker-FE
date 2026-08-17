@@ -27,6 +27,30 @@ export const appApi = createApi({
       }),
     }),
 
+    verifyOtp: builder.mutation<any, { email: string; otp: string }>({
+      query: (data) => ({
+        url: '/auth/verify/otp',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    resendOtp: builder.mutation<any, { email: string }>({
+      query: (data) => ({
+        url: '/auth/resend/otp',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    activateAccount: builder.mutation<any, { token: string; password: string }>({
+      query: (data) => ({
+        url: '/auth/activate-account',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
     getDashboard: builder.query<any, number>({
       query: (year) => `/workspace/dashboard?year=${year}`,
       providesTags: ['Dashboard'],
@@ -126,7 +150,7 @@ export const appApi = createApi({
       transformResponse: (response: unknown) => UserResponseSchema.array().parse(response),
     }),
 
-    createUser: builder.mutation<any, { name: string; email: string; role: string; isActive: boolean }>({
+    createUser: builder.mutation<any, { name: string; email: string; role: string; isActive: boolean; sendInvitation?: boolean }>({
       query: (data) => ({
         url: '/users',
         method: 'POST',
@@ -175,4 +199,9 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+
+  useVerifyOtpMutation,
+  useResendOtpMutation,
+  useActivateAccountMutation,
+
 } = appApi;
