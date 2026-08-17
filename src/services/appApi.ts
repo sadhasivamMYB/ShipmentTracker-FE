@@ -14,7 +14,7 @@ export const appApi = createApi({
     },
   }),
 
-  tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType'],
+  tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType', 'User'],
 
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
@@ -113,6 +113,37 @@ export const appApi = createApi({
       query: (rowId) => `/summary/row/${rowId}`,
       providesTags: (result, _error, id) => [{ type: 'Summary', id }],
     }),
+
+    getUsers: builder.query<any, void>({
+      query: () => '/users',
+      providesTags: ['User'],
+    }),
+
+    createUser: builder.mutation<any, { name: string; email: string; role: string; isActive: boolean }>({
+      query: (data) => ({
+        url: '/users',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    updateUser: builder.mutation<any, { id: number; data: { name: string; email: string; role: string; isActive: boolean } }>({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    deleteUser: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -129,5 +160,10 @@ export const {
   useUpdateDocumentTypeMutation,
   useDeleteDocumentTypeMutation,
 
-  useGetProductValuesQuery
+  useGetProductValuesQuery,
+  
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
 } = appApi;

@@ -38,8 +38,6 @@ export default function DashboardLayout() {
   const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
 
-  console.log(user, '☠️☠️☠️✅')
-
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
@@ -64,10 +62,10 @@ export default function DashboardLayout() {
       >
         <Toolbar className="flex items-center gap-2 border-b border-gray-200 mt-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xs">ERP</span>
+            <span className="text-white font-bold text-xs">ST</span>
           </div>
           <Typography variant="h6" className="font-bold text-gray-900 tracking-tight">
-            DocTracker
+            Shipment Tracker
           </Typography>
         </Toolbar>
 
