@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Button, TextField, Typography, MenuItem, FormControlLabel, Switch } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, LockReset as LockResetIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { UserFormSchema, type UserFormData } from '../../schemas/user.schema';
 import DataTable from '../common/DataTable';
 import FormDialog from './FormDialog';
 import ConfirmDialog from '../common/ConfirmDialog';
 import StatusBadge from '../common/StatusBadge';
 import toast from 'react-hot-toast';
-import { 
-  useGetUsersQuery, 
-  useCreateUserMutation, 
-  useUpdateUserMutation, 
-  useDeleteUserMutation 
+import {
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation
 } from '../../services/appApi';
 
-type FormData = {
-  name: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-};
 
 export default function UserManagementTab() {
   const { data: users = [], isLoading } = useGetUsersQuery();
@@ -33,7 +29,8 @@ export default function UserManagementTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
+    resolver: zodResolver(UserFormSchema),
     defaultValues: { name: '', email: '', role: 'user', isActive: true }
   });
 
@@ -66,7 +63,7 @@ export default function UserManagementTab() {
     setOpenConfirm(false);
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: UserFormData) => {
     try {
       if (editingId) {
         await updateUser({ id: editingId, data }).unwrap();
@@ -88,9 +85,9 @@ export default function UserManagementTab() {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'email', headerName: 'Email', flex: 1 },
-    { 
-      field: 'role', 
-      headerName: 'Role', 
+    {
+      field: 'role',
+      headerName: 'Role',
       width: 120,
       renderCell: (params) => (
         <Typography variant="body2" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
@@ -98,9 +95,9 @@ export default function UserManagementTab() {
         </Typography>
       )
     },
-    { 
-      field: 'isActive', 
-      headerName: 'Status', 
+    {
+      field: 'isActive',
+      headerName: 'Status',
       width: 120,
       renderCell: (params) => <StatusBadge status={params.value ? 'Active' : 'Inactive'} />
     },
@@ -121,7 +118,7 @@ export default function UserManagementTab() {
   return (
     <Box className="flex flex-col gap-4">
       <Box className="flex justify-between items-center">
-        <Typography variant="h6" fontWeight="bold">Manage Users</Typography>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>Manage Users</Typography>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleAdd}>
           Add User
         </Button>
@@ -139,7 +136,6 @@ export default function UserManagementTab() {
           <Controller
             name="name"
             control={control}
-            rules={{ required: 'Name is required' }}
             render={({ field }) => (
               <TextField {...field} label="Full Name" fullWidth error={!!errors.name} helperText={errors.name?.message} />
             )}
@@ -147,10 +143,6 @@ export default function UserManagementTab() {
           <Controller
             name="email"
             control={control}
-            rules={{ 
-              required: 'Email is required',
-              pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
-            }}
             render={({ field }) => (
               <TextField {...field} label="Email Address" type="email" fullWidth error={!!errors.email} helperText={errors.email?.message} />
             )}
@@ -158,7 +150,6 @@ export default function UserManagementTab() {
           <Controller
             name="role"
             control={control}
-            rules={{ required: 'Role is required' }}
             render={({ field }) => (
               <TextField {...field} select label="Role" fullWidth error={!!errors.role} helperText={errors.role?.message}>
                 <MenuItem value="user">User</MenuItem>
