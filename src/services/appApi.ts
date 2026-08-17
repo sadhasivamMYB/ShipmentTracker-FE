@@ -1,10 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store/store';
+import { UserResponseSchema } from '../schemas/user.schema';
+import { DocumentTypeResponseSchema } from '../schemas/documentType.schema';
 
 export const appApi = createApi({
   reducerPath: 'appApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:5000/api', // Match the existing api.ts config
+    baseUrl: import.meta.env.VITE_BASE_URL,  // Match the existing api.ts config
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth?.token;
       if (token) {
@@ -54,7 +56,7 @@ export const appApi = createApi({
         }
         return `/summary?${params.toString()}`;
       },
-      providesTags: (result, _error, arg) => [{ type: 'Summary', id: arg.search ? 'search' : arg.workspaceId }],
+      providesTags: (_result, _error, arg) => [{ type: 'Summary', id: arg.search ? 'search' : arg.workspaceId }],
     }),
 
     exportSummary: builder.query<Blob, number>({
@@ -79,6 +81,10 @@ export const appApi = createApi({
     getDocumentTypes: builder.query<any, void>({
       query: () => '/document-types',
       providesTags: ['DocumentType'],
+      transformResponse: (response: { data: unknown }) => {
+        const parsed = DocumentTypeResponseSchema.array().parse(response.data);
+        return { ...response, data: parsed };
+      },
     }),
 
     createDocumentType: builder.mutation<any, { name: string; documentCode: string; description?: string; status?: string }>({
@@ -111,12 +117,13 @@ export const appApi = createApi({
 
     getProductValues: builder.query<any, string>({
       query: (rowId) => `/summary/row/${rowId}`,
-      providesTags: (result, _error, id) => [{ type: 'Summary', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
     }),
 
     getUsers: builder.query<any, void>({
       query: () => '/users',
       providesTags: ['User'],
+      transformResponse: (response: unknown) => UserResponseSchema.array().parse(response),
     }),
 
     createUser: builder.mutation<any, { name: string; email: string; role: string; isActive: boolean }>({
@@ -126,6 +133,7 @@ export const appApi = createApi({
         body: data,
       }),
       invalidatesTags: ['User'],
+      transformResponse: (response: unknown) => UserResponseSchema.parse(response),
     }),
 
     updateUser: builder.mutation<any, { id: number; data: { name: string; email: string; role: string; isActive: boolean } }>({
@@ -135,6 +143,7 @@ export const appApi = createApi({
         body: data,
       }),
       invalidatesTags: ['User'],
+      transformResponse: (response: unknown) => UserResponseSchema.parse(response),
     }),
 
     deleteUser: builder.mutation<any, number>({
@@ -161,7 +170,7 @@ export const {
   useDeleteDocumentTypeMutation,
 
   useGetProductValuesQuery,
-  
+
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,

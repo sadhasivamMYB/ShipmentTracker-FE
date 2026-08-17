@@ -243,14 +243,15 @@ export default function Workspace() {
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }
+              }} />
             <FormControl size="small" sx={{ minWidth: 100 }}>
               <InputLabel>Year</InputLabel>
               <Select value={year} label="Year" onChange={(e) => setYear(Number(e.target.value))}>
@@ -318,7 +319,7 @@ export default function Workspace() {
             Required Documents *
           </Typography>
           <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {documentTypes.map((doc: any) => {
+            {documentTypes?.length > 0 ? documentTypes?.map((doc: any) => {
               const upload = workspace?.documentUploads?.find((u: any) => u.documentTypeId === doc.id);
               return (
                 <UploadCard
@@ -329,7 +330,8 @@ export default function Workspace() {
                   onUpload={(file) => handleUpload(file, doc.documentCode)}
                 />
               );
-            })}
+            })
+              : <p className='p-6 max-w-6xl mx-auto text-gray-500 text-center'>No document types are available.</p>}
           </Box>
         </Box>
       )}
@@ -345,10 +347,12 @@ export const ProductViewDialog = ({ open, handleClose, data, loading }: { open: 
       onClose={handleClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{
-        sx: {
-          borderRadius: 2.5,
-          overflow: "hidden",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 2.5,
+            overflow: "hidden",
+          }
         },
       }}
     >

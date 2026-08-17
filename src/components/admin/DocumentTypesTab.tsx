@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Button, TextField, FormControlLabel, Switch, Typography, CircularProgress, Select, MenuItem } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DocumentTypeFormSchema, type DocumentTypeFormData } from '../../schemas/documentType.schema';
 import DataTable from '../common/DataTable';
 import FormDialog from './FormDialog';
 // import ConfirmDialog from '../common/ConfirmDialog';
@@ -12,15 +14,8 @@ import {
   useGetDocumentTypesQuery,
   useCreateDocumentTypeMutation,
   useUpdateDocumentTypeMutation,
-  useDeleteDocumentTypeMutation
 } from '../../services/appApi';
 
-type FormData = {
-  name: string;
-  documentCode: string;
-  description: string;
-  isActive: boolean;
-};
 
 export default function DocumentTypesTab() {
   const { data: response, isLoading } = useGetDocumentTypesQuery();
@@ -35,12 +30,13 @@ export default function DocumentTypesTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   // const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
-    defaultValues: { name: '', documentCode: '', description: '', isActive: true }
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<DocumentTypeFormData>({
+    resolver: zodResolver(DocumentTypeFormSchema),
+    defaultValues: { name: '', documentCode: 'PFI', description: '', status: 'active' }
   });
 
   const handleAdd = () => {
-    reset({ name: '', documentCode: '', description: '', isActive: true });
+    reset({ name: '', documentCode: 'PFI', description: '', status: 'active' });
     setEditingId(null);
     setOpenForm(true);
   };
@@ -50,7 +46,7 @@ export default function DocumentTypesTab() {
       name: row.name,
       documentCode: row.documentCode,
       description: row.description || '',
-      isActive: row.status === 'active'
+      status: row.status === 'active' ? 'active' : 'inactive'
     });
     setEditingId(row.id);
     setOpenForm(true);
@@ -73,7 +69,7 @@ export default function DocumentTypesTab() {
   //   setOpenConfirm(false);
   // };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: DocumentTypeFormData) => {
     // Check if the document code already exists
     const isDuplicate = rows.some((row: any) => {
       if (editingId) {
@@ -92,7 +88,7 @@ export default function DocumentTypesTab() {
         name: data.name,
         documentCode: data.documentCode,
         description: data.description,
-        status: data.isActive ? 'active' : 'inactive'
+        status: data.status
       };
 
       if (editingId) {
@@ -142,7 +138,7 @@ export default function DocumentTypesTab() {
   return (
     <Box className="flex flex-col gap-4">
       <Box className="flex justify-between items-center">
-        <Typography variant="h6" fontWeight="bold">Manage Document Types</Typography>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>Manage Document Types</Typography>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleAdd}>
           Add Document Type
         </Button>
@@ -166,7 +162,6 @@ export default function DocumentTypesTab() {
           <Controller
             name="name"
             control={control}
-            rules={{ required: 'Name is required' }}
             render={({ field }) => (
               <TextField {...field} label="Name" fullWidth error={!!errors.name} helperText={errors.name?.message} />
             )}
@@ -174,16 +169,14 @@ export default function DocumentTypesTab() {
           <Controller
             name="documentCode"
             control={control}
-            rules={{ required: 'Code is required' }}
             render={({ field }) => (
-              <Select {...field} label="Document Code (e.g. ORDER)" fullWidth error={!!errors.documentCode} >
+              <Select {...field} label="Document Code (e.g. PFI)" fullWidth error={!!errors.documentCode} >
                 <MenuItem value="PFI">PFI</MenuItem>
                 <MenuItem value="IINS">Import Insurance</MenuItem>
                 <MenuItem value="BL">BL</MenuItem>
                 <MenuItem value="EINS">Export Insurance</MenuItem>
-                <MenuItem value="EXORT_PFI">Export PFI</MenuItem>
+                <MenuItem value="EXPORT_PFI">Export PFI</MenuItem>
                 <MenuItem value="PAAR">Paar</MenuItem>
-                <MenuItem value="FORM_M">Form M</MenuItem>
                 <MenuItem value="FI">Final Invoice</MenuItem>
               </Select>
             )}
@@ -196,11 +189,11 @@ export default function DocumentTypesTab() {
             )}
           />
           <Controller
-            name="isActive"
+            name="status"
             control={control}
             render={({ field }) => (
               <FormControlLabel
-                control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+                control={<Switch checked={field.value === 'active'} onChange={(e) => field.onChange(e.target.checked ? 'active' : 'inactive')} />}
                 label="Active"
               />
             )}
