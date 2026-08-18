@@ -47,6 +47,13 @@ export const templateApi = createApi({
         responseHandler: async (response) => response.blob(),
       }),
     }),
+    deleteTemplate: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/template/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Template'],
+    }),
   }),
 });
 
@@ -56,4 +63,5 @@ export const {
   useUploadTemplateMutation,
   useUpdateTemplateMutation,
   useRenderTemplateMutation,
+  useDeleteTemplateMutation,
 } = templateApi;

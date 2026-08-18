@@ -1,7 +1,6 @@
-import React from 'react';
 import { Chip } from '@mui/material';
 
-type StatusType = 'Waiting' | 'Uploading' | 'OCR Running' | 'Completed' | 'Failed' | 'In Progress' | 'No Uploads' | 'Complete' | 'active' | 'inactive' | 'Active' | 'Inactive' | "invite" | 'Uploaded';
+type StatusType = 'Waiting' | 'Uploading' | 'OCR Running' | 'Completed' | 'Failed' | 'In Progress' | 'No Uploads' | 'Complete' | 'active' | 'inactive' | 'Active' | 'Inactive' | "invite" | 'Invited' | 'Uploaded';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -22,6 +21,7 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     case 'OCR Running':
     case 'In Progress':
     case 'invite':
+    case 'Invited':
       color = 'info';
       break;
     case 'Failed':

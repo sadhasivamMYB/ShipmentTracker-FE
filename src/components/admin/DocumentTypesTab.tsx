@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, TextField, FormControlLabel, Switch, Typography, CircularProgress, Select, MenuItem } from '@mui/material';
+import { Box, Button, TextField, FormControlLabel, Switch, Typography, CircularProgress, Select, MenuItem, Backdrop } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,8 +19,8 @@ import {
 
 export default function DocumentTypesTab() {
   const { data: response, isLoading } = useGetDocumentTypesQuery();
-  const [createDocumentType] = useCreateDocumentTypeMutation();
-  const [updateDocumentType] = useUpdateDocumentTypeMutation();
+  const [createDocumentType, { isLoading: isCreating }] = useCreateDocumentTypeMutation();
+  const [updateDocumentType, { isLoading: isUpdating }] = useUpdateDocumentTypeMutation();
   // const [deleteDocumentType] = useDeleteDocumentTypeMutation();
 
   const rows = response?.data || [];
@@ -208,6 +208,13 @@ export default function DocumentTypesTab() {
         onClose={() => setOpenConfirm(false)}
         onConfirm={onConfirmDelete}
       /> */}
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1000 }}
+        open={isCreating || isUpdating}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 }

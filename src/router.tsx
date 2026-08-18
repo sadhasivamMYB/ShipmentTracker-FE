@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
+import ActivateAccount from './pages/ActivateAccount';
 
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -13,6 +14,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/activate-account',
+    element: <ActivateAccount />,
   },
   {
     path: '/',

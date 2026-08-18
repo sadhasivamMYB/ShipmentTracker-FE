@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Button, TextField, Typography, MenuItem, FormControlLabel, Switch } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, LockReset as LockResetIcon } from '@mui/icons-material';
+import { Box, Button, TextField, Typography, MenuItem, FormControlLabel, Switch, Backdrop, CircularProgress } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,9 +20,9 @@ import {
 
 export default function UserManagementTab() {
   const { data: users = [], isLoading } = useGetUsersQuery();
-  const [createUser] = useCreateUserMutation();
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
+  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
   const [openForm, setOpenForm] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -31,11 +31,11 @@ export default function UserManagementTab() {
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
     resolver: zodResolver(UserFormSchema),
-    defaultValues: { name: '', email: '', role: 'user', isActive: true }
+    defaultValues: { name: '', email: '', role: 'user', status: 'INVITED' }
   });
 
   const handleAdd = () => {
-    reset({ name: '', email: '', role: 'user', isActive: true });
+    reset({ name: '', email: '', role: 'user', status: 'INVITED' });
     setEditingId(null);
     setOpenForm(true);
   };
@@ -70,7 +70,11 @@ export default function UserManagementTab() {
         toast.success('User updated');
       } else {
         await createUser(data).unwrap();
-        toast.success('User created and invitation sent');
+        if (data.sendInvitation) {
+          toast.success('User created and invitation sent');
+        } else {
+          toast.success('User created successfully');
+        }
       }
       setOpenForm(false);
     } catch (err) {
@@ -78,9 +82,9 @@ export default function UserManagementTab() {
     }
   };
 
-  const handleResetPassword = () => {
-    toast.success('Password reset email sent');
-  };
+  // const handleResetPassword = () => {
+  //   toast.success('Password reset email sent');
+  // };
 
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -96,20 +100,22 @@ export default function UserManagementTab() {
       )
     },
     {
-      field: 'isActive',
+      field: 'status',
       headerName: 'Status',
       width: 120,
-      renderCell: (params) => <StatusBadge status={params.value ? 'Active' : 'Inactive'} />
+      renderCell: (params) => {
+        const isInvited = params.value === 'INVITED';
+        return <StatusBadge status={isInvited ? 'Invited' : params.value === 'ACTIVE' ? 'Active' : 'Inactive'} />;
+      }
     },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 280,
       renderCell: (params) => (
-        <Box className="flex gap-2 h-full items-center">
-          <Button size="small" onClick={() => handleEdit(params.row)} startIcon={<EditIcon />}>Edit</Button>
-          <Button size="small" onClick={handleResetPassword} startIcon={<LockResetIcon />}>Reset</Button>
-          <Button size="small" color="error" onClick={() => handleDeleteClick(params.row.id)} startIcon={<DeleteIcon />}>Del</Button>
+        <Box className="flex  h-full items-center">
+          <Button size="small" onClick={() => handleEdit(params.row)} startIcon={<EditIcon />}></Button>
+          <Button size="small" color="error" onClick={() => handleDeleteClick(params.row.id)} startIcon={<DeleteIcon />}></Button>
         </Box>
       )
     }
@@ -157,16 +163,18 @@ export default function UserManagementTab() {
               </TextField>
             )}
           />
-          <Controller
-            name="isActive"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                label="Active Account"
-              />
-            )}
-          />
+          {editingId && (
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={<Switch checked={field.value === 'ACTIVE'} onChange={(e) => field.onChange(e.target.checked ? 'ACTIVE' : 'INACTIVE')} />}
+                  label="Active Account"
+                />
+              )}
+            />
+          )}
         </Box>
       </FormDialog>
 
@@ -177,6 +185,13 @@ export default function UserManagementTab() {
         onClose={() => setOpenConfirm(false)}
         onConfirm={onConfirmDelete}
       />
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1000 }}
+        open={isCreating || isUpdating || isDeleting}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 }
