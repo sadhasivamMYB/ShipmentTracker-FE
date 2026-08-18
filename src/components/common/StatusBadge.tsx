@@ -1,4 +1,3 @@
-import React from 'react';
 import { Chip } from '@mui/material';
 
 type StatusType = 'Waiting' | 'Uploading' | 'OCR Running' | 'Completed' | 'Failed' | 'In Progress' | 'No Uploads' | 'Complete' | 'active' | 'inactive' | 'Active' | 'Inactive' | "invite" | 'Invited' | 'Uploaded';

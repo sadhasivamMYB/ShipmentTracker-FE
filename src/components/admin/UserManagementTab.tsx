@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Button, TextField, Typography, MenuItem, FormControlLabel, Switch } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, LockReset as LockResetIcon } from '@mui/icons-material';
+import { Box, Button, TextField, Typography, MenuItem, FormControlLabel, Switch, Backdrop, CircularProgress } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { type GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,9 +20,9 @@ import {
 
 export default function UserManagementTab() {
   const { data: users = [], isLoading } = useGetUsersQuery();
-  const [createUser] = useCreateUserMutation();
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
+  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
   const [openForm, setOpenForm] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -82,9 +82,9 @@ export default function UserManagementTab() {
     }
   };
 
-  const handleResetPassword = () => {
-    toast.success('Password reset email sent');
-  };
+  // const handleResetPassword = () => {
+  //   toast.success('Password reset email sent');
+  // };
 
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -113,10 +113,9 @@ export default function UserManagementTab() {
       headerName: 'Actions',
       width: 280,
       renderCell: (params) => (
-        <Box className="flex gap-2 h-full items-center">
-          <Button size="small" onClick={() => handleEdit(params.row)} startIcon={<EditIcon />}>Edit</Button>
-          <Button size="small" onClick={handleResetPassword} startIcon={<LockResetIcon />}>Reset</Button>
-          <Button size="small" color="error" onClick={() => handleDeleteClick(params.row.id)} startIcon={<DeleteIcon />}>Del</Button>
+        <Box className="flex  h-full items-center">
+          <Button size="small" onClick={() => handleEdit(params.row)} startIcon={<EditIcon />}></Button>
+          <Button size="small" color="error" onClick={() => handleDeleteClick(params.row.id)} startIcon={<DeleteIcon />}></Button>
         </Box>
       )
     }
@@ -186,6 +185,13 @@ export default function UserManagementTab() {
         onClose={() => setOpenConfirm(false)}
         onConfirm={onConfirmDelete}
       />
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1000 }}
+        open={isCreating || isUpdating || isDeleting}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 }

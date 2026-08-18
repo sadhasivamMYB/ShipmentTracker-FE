@@ -10,6 +10,7 @@ import {
 
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import UpdateOutlinedIcon from "@mui/icons-material/UpdateOutlined";
 
@@ -19,6 +20,7 @@ type TemplateCardProps = {
     updatedAt: string;
     onClick: () => void;
     onEdit: (e: React.MouseEvent) => void;
+    onDelete: (e: React.MouseEvent) => void;
 };
 
 export default function TemplateCard({
@@ -27,6 +29,7 @@ export default function TemplateCard({
     updatedAt,
     onClick,
     onEdit,
+    onDelete,
 }: TemplateCardProps) {
     return (
         <Card
@@ -63,48 +66,78 @@ export default function TemplateCard({
             }}
         >
             {/* =========================
-                Edit Button
+                Action Buttons
             ========================= */}
-            <Tooltip title="Edit template">
-                <IconButton
-                    className="edit-button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(e);
-                    }}
-                    size="small"
-                    sx={{
-                        position: "absolute",
-                        top: 12,
-                        right: 12,
-                        zIndex: 2,
+            <Box
+                sx={{
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                    zIndex: 2,
+                    display: "flex",
+                    gap: 1,
+                }}
+            >
+                <Tooltip title="Edit template">
+                    <IconButton
+                        className="edit-button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(e);
+                        }}
+                        size="small"
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            opacity: 0,
+                            transform: "scale(0.85)",
+                            color: "text.secondary",
+                            backgroundColor: "rgba(255,255,255,0.92)",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
+                            transition:
+                                "opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease",
+                            "&:hover": {
+                                backgroundColor: "primary.main",
+                                color: "primary.contrastText",
+                            },
+                        }}
+                    >
+                        <EditOutlinedIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
 
-                        width: 36,
-                        height: 36,
-
-                        opacity: 0,
-                        transform: "scale(0.85)",
-
-                        color: "text.secondary",
-                        backgroundColor: "rgba(255,255,255,0.92)",
-
-                        border: "1px solid",
-                        borderColor: "divider",
-
-                        boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
-
-                        transition:
-                            "opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease",
-
-                        "&:hover": {
-                            backgroundColor: "primary.main",
-                            color: "primary.contrastText",
-                        },
-                    }}
-                >
-                    <EditOutlinedIcon fontSize="small" />
-                </IconButton>
-            </Tooltip>
+                <Tooltip title="Delete template">
+                    <IconButton
+                        className="edit-button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(e);
+                        }}
+                        size="small"
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            opacity: 0,
+                            transform: "scale(0.85)",
+                            color: "error.main",
+                            backgroundColor: "rgba(255,255,255,0.92)",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
+                            transition:
+                                "opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease",
+                            "&:hover": {
+                                backgroundColor: "error.main",
+                                color: "error.contrastText",
+                            },
+                        }}
+                    >
+                        <DeleteOutlinedIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </Box>
 
             {/* =========================
                 Document Preview
@@ -191,12 +224,13 @@ export default function TemplateCard({
                 {/* Template Name */}
                 <Typography
                     variant="subtitle1"
-                    fontWeight={700}
+
                     noWrap
                     title={name}
                     sx={{
                         color: "text.primary",
                         mb: 1.5,
+                        fontWeight: 700
                     }}
                 >
                     {name}
@@ -220,8 +254,8 @@ export default function TemplateCard({
                         <Stack
                             direction="row"
                             spacing={0.7}
-                            alignItems="center"
-                            sx={{ mb: 0.5 }}
+
+                            sx={{ mb: 0.5, alignItems: "center" }}
                         >
                             <CalendarTodayOutlinedIcon
                                 sx={{ fontSize: 14 }}
@@ -229,7 +263,7 @@ export default function TemplateCard({
 
                             <Typography
                                 variant="caption"
-                                fontWeight={600}
+                                sx={{ fontWeight: 600 }}
                             >
                                 Created
                             </Typography>
@@ -256,8 +290,8 @@ export default function TemplateCard({
                         <Stack
                             direction="row"
                             spacing={0.7}
-                            alignItems="center"
-                            sx={{ mb: 0.5 }}
+
+                            sx={{ mb: 0.5, alignItems: "center" }}
                         >
                             <UpdateOutlinedIcon
                                 sx={{ fontSize: 14 }}
@@ -265,7 +299,7 @@ export default function TemplateCard({
 
                             <Typography
                                 variant="caption"
-                                fontWeight={600}
+                                sx={{ fontWeight: 600 }}
                             >
                                 Updated
                             </Typography>

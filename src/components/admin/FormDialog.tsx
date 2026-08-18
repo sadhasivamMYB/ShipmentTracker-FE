@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
   Typography,
   IconButton
 } from '@mui/material';
@@ -32,9 +32,9 @@ export default function FormDialog({
   isSubmitting = false
 }: FormDialogProps) {
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 3 } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
       <DialogTitle className="flex justify-between items-center border-b border-gray-100 pb-3">
-        <Typography variant="h6" fontWeight="bold">
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
           {title}
         </Typography>
         <IconButton onClick={onClose} size="small">
@@ -48,9 +48,9 @@ export default function FormDialog({
         <Button onClick={onClose} color="inherit" variant="text" disabled={isSubmitting}>
           {cancelText}
         </Button>
-        <Button 
-          onClick={onSubmit} 
-          color="primary" 
+        <Button
+          onClick={onSubmit}
+          color="primary"
           variant="contained"
           disableElevation
           disabled={isSubmitting}

@@ -6,7 +6,9 @@ import type { Template } from '../types/template';
 import TemplateCard from '../components/templateCard';
 import PageHeader from '../components/PageHeader';
 import TemplateUploadDialog from '../components/TemplateUploadDialog';
-import { useGetTemplatesQuery } from '../services/templateApi';
+import { useGetTemplatesQuery, useDeleteTemplateMutation } from '../services/templateApi';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 export default function TemplateList() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -16,6 +18,10 @@ export default function TemplateList() {
 
   const { data: response, isLoading, isError, refetch: fetchTemplates } = useGetTemplatesQuery();
   const templates = response?.data as Template[];
+  const [deleteTemplate] = useDeleteTemplateMutation();
+
+  const [deleteTemplateId, setDeleteTemplateId] = useState<number | null>(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const handleOpenCreate = () => {
     setEditTemplateId(null);
@@ -27,6 +33,23 @@ export default function TemplateList() {
     setEditTemplateId(template.id);
     setEditTemplateName(template.name);
     setIsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteTemplateId(id);
+    setOpenConfirm(true);
+  };
+
+  const onConfirmDelete = async () => {
+    if (deleteTemplateId) {
+      try {
+        await deleteTemplate(deleteTemplateId).unwrap();
+        toast.success('Template deleted successfully');
+      } catch (err) {
+        toast.error('Failed to delete template');
+      }
+    }
+    setOpenConfirm(false);
   };
 
   return (
@@ -74,6 +97,7 @@ export default function TemplateList() {
                 updatedAt={template.updatedAt || 'N/A'}
                 onClick={() => navigate(`/template/${template.id}`)}
                 onEdit={() => handleOpenEdit(template)}
+                onDelete={() => handleDeleteClick(template.id)}
               />
             </Grid>
           ))}
@@ -86,6 +110,14 @@ export default function TemplateList() {
         onSuccess={fetchTemplates}
         templateId={editTemplateId}
         initialName={editTemplateName}
+      />
+
+      <ConfirmDialog
+        open={openConfirm}
+        title="Delete Template"
+        message="Are you sure you want to delete this template? This action cannot be undone."
+        onClose={() => setOpenConfirm(false)}
+        onConfirm={onConfirmDelete}
       />
     </Box>
   );
