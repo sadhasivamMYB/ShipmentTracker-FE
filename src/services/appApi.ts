@@ -150,7 +150,7 @@ export const appApi = createApi({
       transformResponse: (response: unknown) => UserResponseSchema.array().parse(response),
     }),
 
-    createUser: builder.mutation<any, { name: string; email: string; role: string; isActive: boolean; sendInvitation?: boolean }>({
+    createUser: builder.mutation<any, { name: string; email: string; role: string; status: string }>({
       query: (data) => ({
         url: '/users',
         method: 'POST',
@@ -160,7 +160,7 @@ export const appApi = createApi({
       transformResponse: (response: unknown) => UserResponseSchema.parse(response),
     }),
 
-    updateUser: builder.mutation<any, { id: number; data: { name: string; email: string; role: string; isActive: boolean } }>({
+    updateUser: builder.mutation<any, { id: number; data: { name: string; email: string; role: string; status: string } }>({
       query: ({ id, data }) => ({
         url: `/users/${id}`,
         method: 'PUT',

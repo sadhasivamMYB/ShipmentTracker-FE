@@ -31,11 +31,11 @@ export default function UserManagementTab() {
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
     resolver: zodResolver(UserFormSchema),
-    defaultValues: { name: '', email: '', role: 'user', isActive: true, sendInvitation: true }
+    defaultValues: { name: '', email: '', role: 'user', status: 'INVITED' }
   });
 
   const handleAdd = () => {
-    reset({ name: '', email: '', role: 'user', isActive: true, sendInvitation: true });
+    reset({ name: '', email: '', role: 'user', status: 'INVITED' });
     setEditingId(null);
     setOpenForm(true);
   };
@@ -100,10 +100,13 @@ export default function UserManagementTab() {
       )
     },
     {
-      field: 'isActive',
+      field: 'status',
       headerName: 'Status',
       width: 120,
-      renderCell: (params) => <StatusBadge status={params.value ? 'Active' : 'Inactive'} />
+      renderCell: (params) => {
+        const isInvited = params.value === 'INVITED';
+        return <StatusBadge status={isInvited ? 'Invited' : params.value === 'ACTIVE' ? 'Active' : 'Inactive'} />;
+      }
     },
     {
       field: 'actions',
@@ -161,24 +164,14 @@ export default function UserManagementTab() {
               </TextField>
             )}
           />
-          <Controller
-            name="isActive"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                label="Active Account"
-              />
-            )}
-          />
-          {!editingId && (
+          {editingId && (
             <Controller
-              name="sendInvitation"
+              name="status"
               control={control}
               render={({ field }) => (
                 <FormControlLabel
-                  control={<Switch checked={field.value ?? true} onChange={(e) => field.onChange(e.target.checked)} />}
-                  label="Send Invitation Email"
+                  control={<Switch checked={field.value === 'ACTIVE'} onChange={(e) => field.onChange(e.target.checked ? 'ACTIVE' : 'INACTIVE')} />}
+                  label="Active Account"
                 />
               )}
             />

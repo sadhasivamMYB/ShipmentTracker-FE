@@ -6,7 +6,7 @@ export const UserResponseSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   role: z.enum(["admin", "user"], { message: "Role is required" }),
-  isActive: z.boolean(),
+  status: z.enum(["INVITED", "ACTIVE", "INACTIVE"]).catch("INVITED"),
 });
 
 export type UserResponse = z.infer<typeof UserResponseSchema>;
@@ -16,7 +16,7 @@ export const UserFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   role: z.enum(["admin", "user"], { message: "Role is required" }),
-  isActive: z.boolean(),
+  status: z.enum(["INVITED", "ACTIVE", "INACTIVE"]),
   sendInvitation: z.boolean().optional(),
 });
 

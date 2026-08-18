@@ -73,8 +73,7 @@ const Login = () => {
         handleSubmit,
         formState: { errors }
     } = useForm<LoginPayload>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: { email: 'user@company.com', password: 'password123' }
+        resolver: zodResolver(loginSchema)
     });
 
     const onSubmit = async (data: LoginPayload) => {
