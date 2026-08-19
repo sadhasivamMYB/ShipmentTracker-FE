@@ -5,13 +5,14 @@ export const templateApi = createApi({
   reducerPath: 'templateApi',
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BASE_URL,  // Match the existing api.ts config
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth?.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
+    credentials: "include",
+    // prepareHeaders: (headers, { getState }) => {
+    //   const token = (getState() as RootState).auth?.token;
+    //   if (token) {
+    //     headers.set('authorization', `Bearer ${token}`);
+    //   }
+    //   return headers;
+    // },
   }),
   tagTypes: ['Template'],
   endpoints: (builder) => ({

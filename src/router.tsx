@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
       {
         path: 'template',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin']}>
             <TemplateList />
           </ProtectedRoute>
         ),
@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
       {
         path: 'template/:id',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin']}>
             <TemplateDetails />
           </ProtectedRoute>
         ),

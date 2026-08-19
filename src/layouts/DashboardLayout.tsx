@@ -19,7 +19,7 @@ import {
   DocumentScannerOutlined
 } from '@mui/icons-material';
 import { logout } from '../store/slices/authSlice';
-import type { RootState } from '../store/store';
+import { appApi, useGetMeQuery, useLogoutMutation } from '../services/appApi';
 
 const drawerWidth = 260;
 
@@ -35,10 +35,25 @@ export default function DashboardLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const user = useSelector((state: RootState) => state.auth.user);
 
-  const handleLogout = () => {
+  const [logoutApi] = useLogoutMutation();
+
+  const { data: data, isLoading } = useGetMeQuery()
+
+  if (isLoading) {
+    return <p>Loading...</p>
+  }
+
+  const user = data?.user
+  
+  const handleLogout = async () => {
+    try {
+      await logoutApi().unwrap();
+    } catch (e) {
+      console.error('Logout failed:', e);
+    }
     dispatch(logout());
+    dispatch(appApi.util.resetApiState());
     navigate('/login');
   };
 
