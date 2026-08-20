@@ -1,22 +1,19 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Card, CardContent, Typography, Box, Paper, alpha, useTheme } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, CheckCircle as CheckCircleIcon, Refresh as RefreshIcon, FileDownload as FileDownloadIcon, Visibility, Description as DescriptionIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
+import { Description as DescriptionIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store/store';
+import { useGetMeQuery } from '../../services/appApi';
 
 interface UploadCardProps {
   documentName: string;
-  status: 'Waiting' | 'Uploading' | 'OCR Running' | 'Completed' | 'Failed' | 'Uploaded';
-  ocrStatus?: string;
   uploadTimestamp?: string;
-  fileUrl?: string;
   onUpload: (file: File) => void;
 }
 
-export default function UploadCard({ documentName, status, ocrStatus, uploadTimestamp, fileUrl, onUpload }: UploadCardProps) {
+export default function UploadCard({ documentName, uploadTimestamp, onUpload }: UploadCardProps) {
   const theme = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { data: userData, isLoading: _userLoading } = useGetMeQuery()
+  const user = userData?.user
   const canUpload = user?.role === 'admin';
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -65,7 +62,7 @@ export default function UploadCard({ documentName, status, ocrStatus, uploadTime
               <DescriptionIcon />
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight={700} color="text.primary" sx={{ fontSize: '1.1rem', lineHeight: 1.2 }}>
+              <Typography variant="h6" color="text.primary" sx={{ fontSize: '1.1rem', lineHeight: 1.2, fontWeight: 600 }}>
                 {documentName}
               </Typography>
               {uploadTimestamp && (

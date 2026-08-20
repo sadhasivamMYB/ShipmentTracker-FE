@@ -158,6 +158,12 @@ export const appApi = createApi({
       providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
     }),
 
+    // fetch PAAR product Values QTY, NAME, PRICE
+    getPaarProductValues: builder.query<any, string>({
+      query: (paarNumber) => `/summary/paar-row/${encodeURIComponent(paarNumber)}`,
+      providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
+    }),
+
     getUsers: builder.query<any, void>({
       query: () => '/users',
       providesTags: ['User'],
@@ -208,6 +214,7 @@ export const {
   useDeleteDocumentTypeMutation,
 
   useGetProductValuesQuery,
+  useGetPaarProductValuesQuery,
 
   useGetUsersQuery,
   useCreateUserMutation,

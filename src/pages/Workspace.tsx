@@ -11,8 +11,6 @@ import {
 import DataTable from '../components/common/DataTable';
 import UploadCard from '../components/workspace/UploadCard';
 import StatusBadge from '../components/common/StatusBadge';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store/store';
 import {
   useGetWorkspaceQuery,
   useGetSummaryQuery,
@@ -20,7 +18,9 @@ import {
   useUploadDocumentMutation,
   useLazyExportSummaryQuery,
   useGetDocumentTypesQuery,
-  useGetProductValuesQuery
+  useGetProductValuesQuery,
+  useGetPaarProductValuesQuery,
+  useGetMeQuery
 } from '../services/appApi';
 import toast from 'react-hot-toast';
 
@@ -33,7 +33,11 @@ export default function Workspace() {
   const [openDialogTable, setOpenDialogTable] = useState(false);
   const [openDialogDataID, setOpenDialogDataID] = useState<string | null>(null);
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  const [openPaarDialogTable, setOpenPaarDialogTable] = useState(false);
+  const [openPaarDialogDataID, setOpenPaarDialogDataID] = useState<string | null>(null);
+
+  const { data: userData, isLoading: userLoading } = useGetMeQuery()
+  const user = userData?.user
   const canUpload = user?.role?.toLowerCase() === 'admin';
 
   // 1. Fetch Workspace
@@ -50,6 +54,10 @@ export default function Workspace() {
 
   const { currentData: productValuesRes, isLoading: productValuesLoading } = useGetProductValuesQuery(openDialogDataID as string, {
     skip: !openDialogDataID,
+  });
+
+  const { currentData: paarProductValuesRes, isLoading: paarProductValuesLoading } = useGetPaarProductValuesQuery(openPaarDialogDataID as string, {
+    skip: !openPaarDialogDataID,
   });
 
   const rows = sumRes?.data || [];
@@ -108,6 +116,11 @@ export default function Workspace() {
   const handleView = async (id) => {
     setOpenDialogTable(true)
     setOpenDialogDataID(id)
+  }
+
+  const handlePaarView = async (id) => {
+    setOpenPaarDialogTable(true)
+    setOpenPaarDialogDataID(id)
   }
 
 
@@ -214,6 +227,32 @@ export default function Workspace() {
       cols.unshift(pfiCol);
     }
 
+    const paarCol = cols.find(c => c.field === "paarNumber");
+    if (paarCol) {
+      paarCol.renderCell = (params: any) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          <span>{params.value}</span>
+
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              handlePaarView(params.row.paarNumber);
+            }}
+          >
+            <Visibility fontSize="small" />
+          </IconButton>
+        </Box>
+      );
+    }
+
     return cols;
   }, [rows]);
 
@@ -224,6 +263,10 @@ export default function Workspace() {
       {
         openDialogTable &&
         <ProductViewDialog open={openDialogTable} data={productValuesRes?.data} loading={productValuesLoading} handleClose={() => setOpenDialogTable(false)} />
+      }
+      {
+        openPaarDialogTable &&
+        <PaarProductViewDialog open={openPaarDialogTable} data={paarProductValuesRes?.data} loading={paarProductValuesLoading} handleClose={() => setOpenPaarDialogTable(false)} />
       }
       <Box className="flex flex-col gap-4">
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
@@ -320,13 +363,11 @@ export default function Workspace() {
           </Typography>
           <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {documentTypes?.length > 0 ? documentTypes?.map((doc: any) => {
-              const upload = workspace?.documentUploads?.find((u: any) => u.documentTypeId === doc.id);
+              // const upload = workspace?.documentUploads?.find((u: any) => u.documentTypeId === doc.id);
               return (
                 <UploadCard
                   key={doc.id}
                   documentName={doc.name}
-                  status={upload ? 'Uploaded' : 'Waiting'}
-                  fileUrl={upload ? upload.filePath : undefined}
                   onUpload={(file) => handleUpload(file, doc.documentCode)}
                 />
               );
@@ -582,6 +623,198 @@ export const ProductViewDialog = ({ open, handleClose, data, loading }: { open: 
               ) : (
                 <TableRow>
                   <TableCell colSpan={3} align="center">
+                    <Box
+                      sx={{
+                        minHeight: 180,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                      >
+                        No products found
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </DialogContent>
+
+      <DialogActions
+        sx={{
+          px: 3,
+          py: 1.5,
+          borderTop: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "#FAFAFA",
+        }}
+      >
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          size="small"
+          sx={{
+            textTransform: "none",
+            borderRadius: 1.5,
+            px: 2.5,
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+export const PaarProductViewDialog = ({ open, handleClose, data, loading }: { open: boolean; handleClose: () => void, data: any, loading: boolean }) => {
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 2.5,
+            overflow: "hidden",
+          }
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          px: 3,
+          py: 2,
+          fontSize: "1.1rem",
+          fontWeight: 600,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        PAAR Product Details
+      </DialogTitle>
+
+      <DialogContent
+        sx={{
+          p: 0,
+        }}
+      >
+        <TableContainer>
+          <Table
+            sx={{
+              minWidth: 400,
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid #E5E7EB",
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow
+                sx={{
+                  backgroundColor: "#F8FAFC",
+                }}
+              >
+                <TableCell
+                  sx={{
+                    fontWeight: 400,
+                    color: "#475569",
+                    fontSize: "0.8rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  Product Name
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#475569",
+                    fontSize: "0.8rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.03em",
+                    width: 200,
+                  }}
+                >
+                  Product Quality
+                </TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    <Box
+                      sx={{
+                        minHeight: 240,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        gap: 1.5,
+                      }}
+                    >
+                      <CircularProgress size={28} thickness={4} />
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                        }}
+                      >
+                        Loading products...
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ) : data?.length ? (
+                data.map((item: any, index: number) => (
+                  <TableRow
+                    key={item?.id ?? index}
+                    sx={{
+                      padding: "0 40px",
+                      "&:last-child td": {
+                        borderBottom: 0,
+                      },
+                      "&:hover": {
+                        backgroundColor: "#F8FAFC",
+                      },
+                      transition: "background-color 0.15s ease",
+                    }}
+                  >
+                    <TableCell
+                      sx={{
+                        py: 1.75,
+                        color: "#111827",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {item?.productName || '-'}
+                    </TableCell>
+
+                    <TableCell
+                      align="right"
+                      sx={{
+                        py: 1.75,
+                        color: "#475569",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {item?.productQuantity || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
                     <Box
                       sx={{
                         minHeight: 180,
