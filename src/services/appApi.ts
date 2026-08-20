@@ -5,20 +5,27 @@ import { DocumentTypeResponseSchema } from '../schemas/documentType.schema';
 
 export const appApi = createApi({
   reducerPath: 'appApi',
+
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BASE_URL,  // Match the existing api.ts config
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth?.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
+    credentials: "include",
+    // prepareHeaders: (headers, { getState }) => {
+    //   const token = (getState() as RootState).auth?.token;
+    //   if (token) {
+    //     headers.set('authorization', `Bearer ${token}`);
+    //   }
+    //   return headers;
+    // },
   }),
 
   tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType', 'User'],
 
   endpoints: (builder) => ({
+
+    getMe: builder.query<any, void>({
+      query: () => "/auth/me",
+    }),
+
     login: builder.mutation<any, any>({
       query: (credentials) => ({
         url: '/auth/login',
@@ -48,6 +55,13 @@ export const appApi = createApi({
         url: '/auth/activate-account',
         method: 'POST',
         body: data,
+      }),
+    }),
+
+    logout: builder.mutation<any, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
       }),
     }),
 
@@ -144,6 +158,12 @@ export const appApi = createApi({
       providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
     }),
 
+    // fetch PAAR product Values QTY, NAME, PRICE
+    getPaarProductValues: builder.query<any, string>({
+      query: (paarNumber) => `/summary/paar-row/${encodeURIComponent(paarNumber)}`,
+      providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
+    }),
+
     getUsers: builder.query<any, void>({
       query: () => '/users',
       providesTags: ['User'],
@@ -194,6 +214,7 @@ export const {
   useDeleteDocumentTypeMutation,
 
   useGetProductValuesQuery,
+  useGetPaarProductValuesQuery,
 
   useGetUsersQuery,
   useCreateUserMutation,
@@ -203,5 +224,9 @@ export const {
   useVerifyOtpMutation,
   useResendOtpMutation,
   useActivateAccountMutation,
+
+
+  useGetMeQuery,
+  useLogoutMutation
 
 } = appApi;

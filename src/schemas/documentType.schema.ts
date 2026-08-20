@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const ALLOWED_DOCUMENT_CODES = ["PFI", "IINS", "BL", "EXPORT_PFI", "EINS", "FI", "PAAR"] as const;
+const ALLOWED_DOCUMENT_CODES = ["PFI", "IINS", "BL", "EXPORT_PFI", "EINS", "FI", "PAAR", "FORM_M", "SGD"] as const;
 
 // Schema for incoming DocumentType data from the backend
 export const DocumentTypeResponseSchema = z.object({

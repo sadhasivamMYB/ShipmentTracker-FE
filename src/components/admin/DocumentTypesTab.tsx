@@ -173,11 +173,13 @@ export default function DocumentTypesTab() {
               <Select {...field} label="Document Code (e.g. PFI)" fullWidth error={!!errors.documentCode} >
                 <MenuItem value="PFI">PFI</MenuItem>
                 <MenuItem value="IINS">Import Insurance</MenuItem>
-                <MenuItem value="BL">BL</MenuItem>
                 <MenuItem value="EINS">Export Insurance</MenuItem>
+                <MenuItem value="BL">BL</MenuItem>
                 <MenuItem value="EXPORT_PFI">Export PFI</MenuItem>
                 <MenuItem value="PAAR">Paar</MenuItem>
+                <MenuItem value="FORM_M">FORM M</MenuItem>
                 <MenuItem value="FI">Final Invoice</MenuItem>
+                <MenuItem value="SGD">SGD</MenuItem>
               </Select>
             )}
           />
