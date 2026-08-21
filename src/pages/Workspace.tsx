@@ -20,7 +20,8 @@ import {
   useGetDocumentTypesQuery,
   useGetProductValuesQuery,
   useGetPaarProductValuesQuery,
-  useGetMeQuery
+  useGetMeQuery,
+  useUpdateSummaryRowMutation
 } from '../services/appApi';
 import toast from 'react-hot-toast';
 
@@ -67,6 +68,26 @@ export default function Workspace() {
   const [uploadDocument] = useUploadDocumentMutation();
   const [createWorkspace] = useCreateWorkspaceMutation();
   const [exportSummary] = useLazyExportSummaryQuery();
+  const [updateSummaryRow] = useUpdateSummaryRowMutation();
+
+  const handleProcessRowUpdate = async (newRow: any, oldRow: any) => {
+    const changedFields: any = {};
+    if (newRow.blNumber !== oldRow.blNumber) changedFields.blNumber = newRow.blNumber;
+    if (newRow.containerNumber !== oldRow.containerNumber) changedFields.containerNumber = newRow.containerNumber;
+    if (newRow.sealNumber !== oldRow.sealNumber) changedFields.sealNumber = newRow.sealNumber;
+
+    if (Object.keys(changedFields).length > 0) {
+      try {
+        await updateSummaryRow({ pfi: newRow.pfiNumber, data: changedFields }).unwrap();
+        toast.success("Row updated successfully");
+        return newRow;
+      } catch (err: any) {
+        toast.error(err?.data?.message || "Failed to update row");
+        return oldRow;
+      }
+    }
+    return newRow;
+  };
 
   const handleRefresh = () => {
     refetchWorkspace();
@@ -131,6 +152,7 @@ export default function Workspace() {
 
     const cols = Array.from(allKeys).map(key => {
       let renderCell = undefined;
+      const editable = ["blNumber", "containerNumber", "sealNumber"].includes(key);
 
       if (key === 'status') {
         renderCell = (params: any) => <StatusBadge status={params.value} />;
@@ -191,7 +213,8 @@ export default function Workspace() {
         field: key,
         headerName: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
         width: 150,
-        renderCell
+        renderCell,
+        editable
       };
     });
 
@@ -352,7 +375,15 @@ export default function Workspace() {
             )}
           </Box>
         ) : (
-          <DataTable rows={rows} columns={dynamicColumns} />
+          <DataTable 
+            rows={rows} 
+            columns={dynamicColumns} 
+            processRowUpdate={handleProcessRowUpdate}
+            onProcessRowUpdateError={(error) => {
+              console.error(error);
+              toast.error("Error updating row");
+            }}
+          />
         )}
       </Box>
 

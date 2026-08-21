@@ -6,9 +6,11 @@ interface DataTableProps {
   rows: GridRowsProp;
   columns: GridColDef[];
   loading?: boolean;
+  processRowUpdate?: (newRow: any, oldRow: any) => any;
+  onProcessRowUpdateError?: (error: any) => void;
 }
 
-export default function DataTable({ rows, columns, loading }: DataTableProps) {
+export default function DataTable({ rows, columns, loading, processRowUpdate, onProcessRowUpdateError }: DataTableProps) {
 
   if (loading) {
     return (
@@ -23,6 +25,8 @@ export default function DataTable({ rows, columns, loading }: DataTableProps) {
         rows={rows}
         columns={columns}
         hideFooter
+        processRowUpdate={processRowUpdate}
+        onProcessRowUpdateError={onProcessRowUpdateError}
         sx={{
           border: 0,
           '& .MuiDataGrid-columnHeaders': {

@@ -152,10 +152,18 @@ export const appApi = createApi({
     }),
 
     // fetch product Values QTY, NAME, PRICE
-
     getProductValues: builder.query<any, string>({
       query: (rowId) => `/summary/row/${rowId}`,
       providesTags: (_result, _error, id) => [{ type: 'Summary', id }],
+    }),
+
+    updateSummaryRow: builder.mutation<any, { pfi: string; data: any }>({
+      query: ({ pfi, data }) => ({
+        url: `/summary/row/${encodeURIComponent(pfi)}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { pfi }) => [{ type: 'Summary', id: pfi }],
     }),
 
     // fetch PAAR product Values QTY, NAME, PRICE
@@ -214,6 +222,7 @@ export const {
   useDeleteDocumentTypeMutation,
 
   useGetProductValuesQuery,
+  useUpdateSummaryRowMutation,
   useGetPaarProductValuesQuery,
 
   useGetUsersQuery,

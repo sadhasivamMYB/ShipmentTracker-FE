@@ -26,7 +26,7 @@ export default function TemplateDetails() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = template.file_name ? `generated-${template.file_name}` : "document.docx";
+      link.download = template.file_name ? `generated-${template.file_name}.pdf` : "document.pdf";
       document.body.appendChild(link);
       link.click();
 
