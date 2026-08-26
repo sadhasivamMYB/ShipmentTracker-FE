@@ -18,12 +18,13 @@ export const appApi = createApi({
     // },
   }),
 
-  tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType', 'User'],
+  tagTypes: ['Workspace', 'Summary', 'Dashboard', 'DocumentType', 'User', 'Auth'],
 
   endpoints: (builder) => ({
 
     getMe: builder.query<any, void>({
       query: () => "/auth/me",
+      providesTags: ['Auth'],
     }),
 
     login: builder.mutation<any, any>({
@@ -40,6 +41,7 @@ export const appApi = createApi({
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['Auth'],
     }),
 
     resendOtp: builder.mutation<any, { email: string }>({
@@ -63,6 +65,7 @@ export const appApi = createApi({
         url: '/auth/logout',
         method: 'POST',
       }),
+      invalidatesTags: ['Auth'],
     }),
 
     getDashboard: builder.query<any, number>({
@@ -104,6 +107,13 @@ export const appApi = createApi({
       }),
     }),
 
+    downloadDocument: builder.query<Blob, { workspaceId: number, documentType: string, referenceKey: string, referenceValue: string }>({
+      query: ({ workspaceId, documentType, referenceKey, referenceValue }) => ({
+        url: `/upload/download/${workspaceId}/${documentType}/${referenceKey}/${encodeURIComponent(referenceValue)}`,
+        responseHandler: async (response) => response.blob(),
+      }),
+    }),
+
     uploadDocument: builder.mutation<any, FormData>({
       query: (formData) => ({
         url: '/upload',
@@ -120,7 +130,7 @@ export const appApi = createApi({
       query: () => '/document-types',
       providesTags: ['DocumentType'],
       transformResponse: (response: { data: unknown }) => {
-        const parsed = DocumentTypeResponseSchema.array().parse(response.data);
+        const parsed = DocumentTypeResponseSchema.array().parse(response?.data);
         return { ...response, data: parsed };
       },
     }),
@@ -215,6 +225,7 @@ export const {
   useCreateWorkspaceMutation,
   useGetSummaryQuery,
   useLazyExportSummaryQuery,
+  useLazyDownloadDocumentQuery,
   useUploadDocumentMutation,
   useGetDocumentTypesQuery,
   useCreateDocumentTypeMutation,

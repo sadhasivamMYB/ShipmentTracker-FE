@@ -17,6 +17,7 @@ import {
   useCreateWorkspaceMutation,
   useUploadDocumentMutation,
   useLazyExportSummaryQuery,
+  useLazyDownloadDocumentQuery,
   useGetDocumentTypesQuery,
   useGetProductValuesQuery,
   useGetPaarProductValuesQuery,
@@ -37,7 +38,7 @@ export default function Workspace() {
   const [openPaarDialogTable, setOpenPaarDialogTable] = useState(false);
   const [openPaarDialogDataID, setOpenPaarDialogDataID] = useState<string | null>(null);
 
-  const { data: userData, isLoading: userLoading } = useGetMeQuery()
+  const { data: userData, isLoading: _userLoading } = useGetMeQuery()
   const user = userData?.user
   const canUpload = user?.role?.toLowerCase() === 'admin';
 
@@ -68,6 +69,7 @@ export default function Workspace() {
   const [uploadDocument] = useUploadDocumentMutation();
   const [createWorkspace] = useCreateWorkspaceMutation();
   const [exportSummary] = useLazyExportSummaryQuery();
+  const [downloadDocument] = useLazyDownloadDocumentQuery();
   const [updateSummaryRow] = useUpdateSummaryRowMutation();
 
   const handleProcessRowUpdate = async (newRow: any, oldRow: any) => {
@@ -143,6 +145,24 @@ export default function Workspace() {
     setOpenPaarDialogTable(true)
     setOpenPaarDialogDataID(id)
   }
+
+  const handleDownload = async (workspaceId: number, documentType: string, referenceKey: string, referenceValue: string) => {
+    try {
+      toast.loading(`Downloading ${documentType.toUpperCase()} PDF...`, { id: "download-pdf" });
+      const blob = await downloadDocument({ workspaceId, documentType, referenceKey, referenceValue }).unwrap();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${documentType.toUpperCase()}_${referenceValue}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Download successful", { id: "download-pdf" });
+    } catch (error) {
+      console.error("Download error", error);
+      toast.error("Failed to download PDF", { id: "download-pdf" });
+    }
+  };
 
 
   const dynamicColumns: GridColDef[] = useMemo(() => {
@@ -244,6 +264,16 @@ export default function Workspace() {
           >
             <Visibility fontSize="small" />
           </IconButton>
+
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDownload(workspace?.id as number, 'pfi', 'pfiNumber', params.value);
+            }}
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
         </Box>
       );
 
@@ -271,6 +301,42 @@ export default function Workspace() {
             }}
           >
             <Visibility fontSize="small" />
+          </IconButton>
+
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDownload(workspace?.id as number, 'paar', 'paarNumber', params.value);
+            }}
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      );
+    }
+
+    const fiCol = cols.find(c => c.field === "fiInvoiceNumber");
+    if (fiCol) {
+      fiCol.renderCell = (params: any) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          <span>{params.value}</span>
+
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDownload(workspace?.id as number, 'fi', 'FI_invoiceNumber', params.value);
+            }}
+          >
+            <DownloadIcon fontSize="small" />
           </IconButton>
         </Box>
       );
@@ -375,9 +441,9 @@ export default function Workspace() {
             )}
           </Box>
         ) : (
-          <DataTable 
-            rows={rows} 
-            columns={dynamicColumns} 
+          <DataTable
+            rows={rows}
+            columns={dynamicColumns}
             processRowUpdate={handleProcessRowUpdate}
             onProcessRowUpdateError={(error) => {
               console.error(error);

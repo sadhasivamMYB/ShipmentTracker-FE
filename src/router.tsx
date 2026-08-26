@@ -10,14 +10,24 @@ import Workspace from './pages/Workspace';
 import TemplateList from './pages/TemplateList';
 import TemplateDetails from './pages/TemplateDetails';
 
+import GuestRoute from './components/auth/GuestRoute';
+
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />,
+    element: (
+      <GuestRoute>
+        <Login />
+      </GuestRoute>
+    ),
   },
   {
     path: '/activate-account',
-    element: <ActivateAccount />,
+    element: (
+      <GuestRoute>
+        <ActivateAccount />
+      </GuestRoute>
+    ),
   },
   {
     path: '/',

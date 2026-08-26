@@ -13,10 +13,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
   const location = useLocation();
 
-  const { data: data, isLoading } = useGetMeQuery()
+  const { data: data, isLoading, isFetching } = useGetMeQuery()
 
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !data)) {
     return <Box sx={{ display: "flex", flexDirection: 'column', width: "100vw", height: "100vh", alignItems: "center", justifyContent: "center" }}>
 
       <CircularProgress />
