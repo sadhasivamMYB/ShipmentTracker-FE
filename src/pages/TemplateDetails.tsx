@@ -26,7 +26,7 @@ export default function TemplateDetails() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = template.file_name ? `generated-${template.file_name}.pdf` : "document.pdf";
+      link.download = template.file_name ? `Template-${template.file_name}` : `Document-${new Date().getDate()}-${new Date().getMonth() + 1}-${new Date().getFullYear()}.docx`;
       document.body.appendChild(link);
       link.click();
 
@@ -43,7 +43,7 @@ export default function TemplateDetails() {
 
   if (isFetching) {
     return (
-      <Box display="flex" justifyContent="center" my={8}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", my: 20 }}>
         <CircularProgress />
       </Box>
     );
@@ -51,7 +51,7 @@ export default function TemplateDetails() {
 
   if (isError || !template) {
     return (
-      <Box p={3}>
+      <Box sx={{ padding: 3 }} >
         <Alert severity="error">Failed to load template details.</Alert>
       </Box>
     );
